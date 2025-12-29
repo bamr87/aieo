@@ -25,7 +25,7 @@ anthropic==0.18.1
 qdrant-client>=1.7.1
 
 # Content parsing
-beautifulsoup4==4.12.2
+beautifulsoup4==4.14.3
 markdown==3.5.2
 html2text==2025.4.15
 readability-lxml==0.8.1

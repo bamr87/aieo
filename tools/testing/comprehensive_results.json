@@ -1,0 +1,235 @@
+{
+  "test_run": {
+    "timestamp": "2025-12-28T22:54:05.012950",
+    "target": "IT-Journey Repository",
+    "version": "0.1.0"
+  },
+  "tests": {
+    "content_parsing": {
+      "duration_ms": 69.91,
+      "parsed": {
+        "text_length": 21202,
+        "headers": 52,
+        "tables": 11,
+        "lists": 24,
+        "code_blocks": 0,
+        "links": 29,
+        "images": 0
+      },
+      "status": "passed"
+    },
+    "scoring_engine": {
+      "duration_ms": 49.27,
+      "score": 72.5,
+      "grade": "B",
+      "word_count": 3333,
+      "pattern_scores": {
+        "structured_data": {
+          "score": 20,
+          "max": 20,
+          "detected": true,
+          "tables": 11,
+          "lists": 24,
+          "headers": 52
+        },
+        "entity_density": {
+          "score": 0,
+          "max": 15,
+          "detected": false
+        },
+        "citation_hooks": {
+          "score": 10,
+          "max": 10,
+          "detected": true,
+          "citation_count": 12
+        },
+        "recursive_depth": {
+          "score": 12.5,
+          "max": 15,
+          "detected": true,
+          "question_count": 9,
+          "nested_count": 2
+        },
+        "temporal_anchoring": {
+          "score": 10,
+          "max": 10,
+          "detected": true,
+          "date_count": 47
+        },
+        "comparison_tables": {
+          "score": 15,
+          "max": 15,
+          "detected": true,
+          "table_count": 11,
+          "has_comparison_keywords": true
+        },
+        "definitional_precision": {
+          "score": 4,
+          "max": 10,
+          "detected": true,
+          "definition_count": 2
+        },
+        "procedural_clarity": {
+          "score": 5,
+          "max": 5,
+          "detected": true,
+          "step_count": 6,
+          "ordered_list_count": 4
+        },
+        "faq_injection": {
+          "score": 10,
+          "max": 15,
+          "detected": true,
+          "has_faq_section": true,
+          "question_header_count": 0
+        },
+        "meta_context": {
+          "score": 6,
+          "max": 10,
+          "detected": true,
+          "importance_count": 3
+        }
+      },
+      "status": "passed"
+    },
+    "pattern_detection": {
+      "patterns": {
+        "structured_data": {
+          "detected": true,
+          "score": 20,
+          "max_score": 20,
+          "percentage": 100.0
+        },
+        "entity_density": {
+          "detected": false,
+          "score": 0,
+          "max_score": 15,
+          "percentage": 0.0
+        },
+        "citation_hooks": {
+          "detected": true,
+          "score": 10,
+          "max_score": 10,
+          "percentage": 100.0
+        },
+        "recursive_depth": {
+          "detected": true,
+          "score": 12.5,
+          "max_score": 15,
+          "percentage": 83.3
+        },
+        "temporal_anchoring": {
+          "detected": true,
+          "score": 10,
+          "max_score": 10,
+          "percentage": 100.0
+        },
+        "comparison_tables": {
+          "detected": true,
+          "score": 15,
+          "max_score": 15,
+          "percentage": 100.0
+        },
+        "definitional_precision": {
+          "detected": true,
+          "score": 4,
+          "max_score": 10,
+          "percentage": 40.0
+        },
+        "procedural_clarity": {
+          "detected": true,
+          "score": 5,
+          "max_score": 5,
+          "percentage": 100.0
+        },
+        "faq_injection": {
+          "detected": true,
+          "score": 10,
+          "max_score": 15,
+          "percentage": 66.7
+        },
+        "meta_context": {
+          "detected": true,
+          "score": 6,
+          "max_score": 10,
+          "percentage": 60.0
+        }
+      },
+      "status": "passed"
+    },
+    "gap_analysis": {
+      "total_gaps": 1,
+      "gaps_by_severity": {
+        "high": 0,
+        "medium": 1,
+        "low": 0
+      },
+      "top_gaps": [
+        {
+          "id": "gap_entity_density",
+          "category": "entities",
+          "severity": "medium",
+          "description": "Low entity density",
+          "location": {
+            "start": 0,
+            "end": 100
+          },
+          "example_fix": "Add entity density to improve score"
+        }
+      ],
+      "status": "passed"
+    },
+    "benchmark": {
+      "score": 72.5,
+      "percentile": 50,
+      "engine_scores": {},
+      "status": "passed"
+    },
+    "optimization": {
+      "status": "skipped",
+      "reason": "Optimization service not available (requires database/AI keys)"
+    },
+    "performance": {
+      "parsing": {
+        "avg_ms": 17.3,
+        "min_ms": 16.54,
+        "max_ms": 18.13
+      },
+      "scoring": {
+        "avg_ms": 20.91,
+        "min_ms": 20.1,
+        "max_ms": 22.03
+      },
+      "status": "passed"
+    }
+  },
+  "summary": {
+    "total_tests": 7,
+    "passed": 6,
+    "skipped": 1,
+    "overall_score": 72.5,
+    "grade": "B",
+    "performance": {
+      "parsing_avg_ms": 17.3,
+      "scoring_avg_ms": 20.91
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "medium",
+      "category": "entity_density",
+      "title": "Improve Entity Density",
+      "description": "Current score: 0/15. Increase entity density to boost citations.",
+      "expected_impact": "Medium citation boost (+10-20%)",
+      "effort": "Low"
+    },
+    {
+      "priority": "medium",
+      "category": "definitional_precision",
+      "title": "Improve Definitional Precision",
+      "description": "Current score: 4/10. Increase definitional precision to boost citations.",
+      "expected_impact": "Medium citation boost (+10-20%)",
+      "effort": "Low"
+    }
+  ]
+}

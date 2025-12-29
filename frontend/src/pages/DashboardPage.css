@@ -1,0 +1,88 @@
+.dashboard-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-content {
+  margin-top: 2rem;
+}
+
+.dashboard-section {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+}
+
+.dashboard-section h2 {
+  margin-bottom: 1.5rem;
+}
+
+.placeholder {
+  color: #666;
+  font-style: italic;
+}
+
+.engine-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.engine-stat {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  text-align: center;
+}
+
+.engine-name {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  text-transform: capitalize;
+}
+
+.engine-count {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.cited-pages {
+  list-style: none;
+  padding: 0;
+}
+
+.cited-pages li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+}
+
+.cited-pages a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.cited-pages a:hover {
+  text-decoration: underline;
+}
+
+.citation-count {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 0.25rem;
+  color: #c33;
+}
+
+

@@ -1,0 +1,53 @@
+.patterns-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.patterns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.pattern-card {
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  transition: box-shadow 0.2s;
+}
+
+.pattern-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pattern-card h3 {
+  margin-bottom: 0.75rem;
+}
+
+.pattern-description {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.pattern-boost {
+  font-size: 0.875rem;
+  color: #28a745;
+  font-weight: 500;
+}
+
+.no-patterns {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #666;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 0.25rem;
+  color: #c33;
+}
+
+

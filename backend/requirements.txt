@@ -39,7 +39,7 @@ aiohttp==3.9.1
 
 # Utilities
 python-dotenv==1.0.0
-python-multipart==0.0.6
+python-multipart==0.0.21
 python-jose[cryptography]==3.3.0
 
 # Development

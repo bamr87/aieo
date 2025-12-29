@@ -34,7 +34,7 @@ readability-lxml==0.8.1
 spacy==3.7.2
 
 # HTTP client
-httpx==0.26.0
+httpx==0.28.1
 aiohttp==3.9.1
 
 # Utilities

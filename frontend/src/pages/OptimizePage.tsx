@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { optimizeApi } from '../services/api';
+import { OptimizeResult, ApiError } from '../types';
 import './OptimizePage.css';
 
 export function OptimizePage() {
   const [content, setContent] = useState('');
-  const [style, setStyle] = useState('preserve');
+  const [style, setStyle] = useState<'preserve' | 'aggressive'>('preserve');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<OptimizeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +27,8 @@ export function OptimizePage() {
         style,
       });
       setResult(response);
-    } catch (err: any) {
+    } catch (err) {
+      const apiError = err as ApiError;
       const errorMessage = apiError.error?.message || 'An error occurred';
       const errorCode = apiError.error?.code || 'UNKNOWN_ERROR';
       

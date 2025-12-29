@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { patternsApi } from '../services/api';
+import { Pattern, ApiError } from '../types';
 import './PatternsPage.css';
 
 export function PatternsPage() {
-  const [patterns, setPatterns] = useState<any[]>([]);
+  const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,10 +14,11 @@ export function PatternsPage() {
 
   const loadPatterns = async () => {
     try {
-      const response: any = await patternsApi.listPatterns();
+      const response = await patternsApi.listPatterns() as { patterns: Pattern[] };
       setPatterns(response.patterns || []);
-    } catch (err: any) {
-      setError(err.error?.message || 'Failed to load patterns');
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.error?.message || 'Failed to load patterns');
     } finally {
       setLoading(false);
     }

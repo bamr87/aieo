@@ -1,14 +1,7 @@
 """Benchmark service for comparing content against top-cited content."""
 
-from typing import Dict, Optional
+from typing import Dict
 from qdrant_client import QdrantClient
-from qdrant_client.models import (
-    Distance,
-    VectorParams,
-    Filter,
-    FieldCondition,
-    MatchValue,
-)
 import openai
 from ..core.config import settings
 

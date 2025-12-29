@@ -8,7 +8,6 @@ import redis
 import json
 
 from ..core.config import settings
-from ..core.database import get_db
 from ..core.validation import validate_content_size, validate_url, sanitize_content
 from ..core.errors import ContentTooLargeError, FetchFailedError
 from ..core.monitoring import track_performance

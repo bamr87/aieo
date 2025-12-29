@@ -1,8 +1,7 @@
 """Content parsing service for markdown and HTML."""
 
-import re
 import hashlib
-from typing import Dict, List, Optional
+from typing import Dict, List
 from bs4 import BeautifulSoup
 import markdown
 import html2text

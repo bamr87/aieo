@@ -1,6 +1,6 @@
 """Diff utilities for showing content changes."""
 
-from typing import List, Dict, Tuple
+from typing import List, Dict
 import difflib
 
 

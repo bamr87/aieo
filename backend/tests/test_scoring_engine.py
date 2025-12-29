@@ -1,6 +1,5 @@
 """Tests for scoring engine."""
 
-import pytest
 from app.services.scoring_engine import ScoringEngine
 
 

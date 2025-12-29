@@ -1,6 +1,5 @@
 """Tests for content parser."""
 
-import pytest
 from app.services.content_parser import ContentParser
 
 

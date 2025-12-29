@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from datetime import datetime
 
-from .config import settings
 from .database import get_db
 from ..models.api_key import APIKey
 

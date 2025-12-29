@@ -1,8 +1,7 @@
 """Scoring engine for AIEO patterns."""
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 import re
-from datetime import datetime
 
 try:
     import spacy

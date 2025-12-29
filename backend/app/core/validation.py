@@ -1,7 +1,6 @@
 """Input validation utilities."""
 
 import re
-from typing import Optional
 from ..core.config import settings
 
 

@@ -3,10 +3,7 @@
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-import httpx
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
-import openai
 
 from ..core.config import settings
 from ..models.citation import Citation

@@ -12,7 +12,7 @@ psycopg2-binary==2.9.11
 
 # Redis and caching
 redis==5.0.1
-hiredis==2.3.2
+hiredis==3.3.0
 
 # Celery for async tasks
 celery==5.3.4

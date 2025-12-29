@@ -1,4 +1,5 @@
 """Audit API endpoints."""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -15,6 +16,7 @@ audit_service = AuditService()
 
 class AuditRequest(BaseModel):
     """Audit request model."""
+
     url: Optional[str] = None
     content: Optional[str] = None
     format: str = "markdown"
@@ -28,7 +30,7 @@ async def audit_content(
 ):
     """
     Audit content for AIEO score.
-    
+
     Either url or content must be provided.
     """
     if not request.url and not request.content:
@@ -36,7 +38,7 @@ async def audit_content(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Either url or content must be provided",
         )
-    
+
     try:
         result = await audit_service.audit(
             url=request.url,
@@ -55,4 +57,3 @@ async def audit_content(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal error: {str(e)}",
         )
-

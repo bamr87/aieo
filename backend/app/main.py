@@ -1,4 +1,5 @@
 """Main FastAPI application."""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -58,6 +59,7 @@ async def global_exception_handler(request, exc):
 
 # Health check endpoints
 from .core.health import router as health_router
+
 app.include_router(health_router)
 
 
@@ -76,5 +78,3 @@ async def root():
         "version": settings.APP_VERSION,
         "docs": "/docs",
     }
-
-

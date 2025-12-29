@@ -1,4 +1,5 @@
 """Monitoring and metrics utilities."""
+
 import time
 from functools import wraps
 from typing import Callable
@@ -9,6 +10,7 @@ logger = logging.getLogger("aieo")
 
 def track_performance(func: Callable):
     """Decorator to track function performance."""
+
     @wraps(func)
     async def async_wrapper(*args, **kwargs):
         start_time = time.time()
@@ -21,7 +23,7 @@ def track_performance(func: Callable):
             duration = time.time() - start_time
             logger.error(f"{func.__name__} failed after {duration:.3f}s: {e}")
             raise
-    
+
     @wraps(func)
     def sync_wrapper(*args, **kwargs):
         start_time = time.time()
@@ -34,11 +36,11 @@ def track_performance(func: Callable):
             duration = time.time() - start_time
             logger.error(f"{func.__name__} failed after {duration:.3f}s: {e}")
             raise
-    
+
     # Return appropriate wrapper based on function type
     import asyncio
+
     if asyncio.iscoroutinefunction(func):
         return async_wrapper
     else:
         return sync_wrapper
-

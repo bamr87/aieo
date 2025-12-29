@@ -1,3 +1,1 @@
 """Core application components."""
-
-

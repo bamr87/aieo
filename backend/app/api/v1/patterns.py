@@ -1,4 +1,5 @@
 """Patterns API endpoints."""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -97,6 +98,7 @@ async def list_patterns(
 
 class ApplyPatternRequest(BaseModel):
     """Apply pattern request model."""
+
     content: str
 
 
@@ -114,11 +116,12 @@ async def apply_pattern(
     pattern = next((p for p in PATTERNS if p["id"] == pattern_id), None)
     if not pattern:
         from fastapi import HTTPException, status
+
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Pattern {pattern_id} not found",
         )
-    
+
     # For MVP, return content as-is
     # In production, this would apply the specific pattern
     return {
@@ -126,4 +129,3 @@ async def apply_pattern(
         "pattern_id": pattern_id,
         "pattern_name": pattern["name"],
     }
-

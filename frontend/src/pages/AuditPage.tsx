@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { auditApi } from '../services/api';
+import { AuditResult, ApiError } from '../types';
 import './AuditPage.css';
 
 export function AuditPage() {
   const [url, setUrl] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<AuditResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -16,7 +17,7 @@ export function AuditPage() {
     setResult(null);
 
     try {
-      const data: any = {};
+      const data: { url?: string; content?: string; format?: string } = {};
       if (url) {
         data.url = url;
       } else if (content) {
@@ -30,13 +31,14 @@ export function AuditPage() {
 
       const response = await auditApi.audit(data);
       setResult(response);
-    } catch (err: any) {
-      const errorMessage = err.error?.message || err.message || 'An error occurred';
-      const errorCode = err.error?.code || 'UNKNOWN_ERROR';
+    } catch (err) {
+      const apiError = err as ApiError;
+      const errorMessage = apiError.error?.message || 'An error occurred';
+      const errorCode = apiError.error?.code || 'UNKNOWN_ERROR';
       
       // Handle specific error codes
       if (errorCode === 'RATE_LIMITED') {
-        const retryAfter = err.error?.retry_after || 60;
+        const retryAfter = apiError.error?.retry_after || 60;
         setError(`${errorMessage} Please wait ${retryAfter} seconds before trying again.`);
       } else if (errorCode === 'NETWORK_ERROR') {
         setError('Unable to connect to server. Please check your connection and try again.');

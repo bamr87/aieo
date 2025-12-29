@@ -8,7 +8,7 @@ pydantic-settings==2.1.0
 sqlalchemy==2.0.25
 alembic==1.13.1
 psycopg2-binary==2.9.9
-timescaledb==0.0.4
+# timescaledb==0.0.4  # Optional - requires Python 3.10+, install separately if needed
 
 # Redis and caching
 redis==5.0.1

@@ -63,7 +63,7 @@ export function DashboardPage() {
           <div className="dashboard-section">
             <h2>Top Cited Pages</h2>
             <ul className="cited-pages">
-              {(data.top_cited_pages || []).map((page: any, index: number) => (
+              {(data.top_cited_pages || []).map((page, index) => (
                 <li key={index}>
                   <a href={page.url} target="_blank" rel="noopener noreferrer">
                     {page.url}

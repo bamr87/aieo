@@ -1,4 +1,5 @@
 """Citations API endpoints."""
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -32,10 +33,10 @@ async def get_citations(
         engine=engine,
         days=30,
     )
-    
+
     # Apply limit
     citations = citations[:limit]
-    
+
     # Convert to dict format
     data = [
         {
@@ -51,7 +52,7 @@ async def get_citations(
         }
         for c in citations
     ]
-    
+
     return {
         "data": data,
         "pagination": {
@@ -71,4 +72,3 @@ async def get_dashboard(
     Get share-of-voice metrics.
     """
     return citation_tracker.get_dashboard_data(db=db)
-

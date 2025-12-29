@@ -1,6 +1,6 @@
 # AIEO - AI Engine Optimization
 
-[![CI](https://github.com/bamr87/aieo/workflows/CI/badge.svg)](https://github.com/bamr87/aieo/actions)
+[![CI](https://github.com/your-username/aieo/workflows/CI/badge.svg)](https://github.com/your-username/aieo/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
@@ -185,8 +185,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - 📖 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/bamr87/aieo/issues)
-- 💬 [Discussions](https://github.com/bamr87/aieo/discussions)
+- 🐛 [Issue Tracker](https://github.com/your-username/aieo/issues)
+- 💬 [Discussions](https://github.com/your-username/aieo/discussions)
 
 ---
 

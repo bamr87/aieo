@@ -1,4 +1,5 @@
 """Optimize API endpoints."""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -16,6 +17,7 @@ optimize_service = OptimizeService()
 
 class OptimizeRequest(BaseModel):
     """Optimize request model."""
+
     content: str
     target_engines: Optional[list[str]] = None
     style: str = "preserve"
@@ -35,7 +37,7 @@ async def optimize_content(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Content is required",
         )
-    
+
     try:
         result = await optimize_service.optimize(
             content=request.content,
@@ -65,4 +67,3 @@ async def optimize_content(
                 }
             },
         )
-

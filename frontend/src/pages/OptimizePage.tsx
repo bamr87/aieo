@@ -27,12 +27,12 @@ export function OptimizePage() {
       });
       setResult(response);
     } catch (err: any) {
-      const errorMessage = err.error?.message || err.message || 'An error occurred';
-      const errorCode = err.error?.code || 'UNKNOWN_ERROR';
+      const errorMessage = apiError.error?.message || 'An error occurred';
+      const errorCode = apiError.error?.code || 'UNKNOWN_ERROR';
       
       // Handle specific error codes
       if (errorCode === 'RATE_LIMITED') {
-        const retryAfter = err.error?.retry_after || 60;
+        const retryAfter = apiError.error?.retry_after || 60;
         setError(`${errorMessage} Please wait ${retryAfter} seconds before trying again.`);
       } else if (errorCode === 'NETWORK_ERROR') {
         setError('Unable to connect to server. Please check your connection and try again.');

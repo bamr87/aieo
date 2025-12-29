@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { citationsApi } from '../services/api';
+import { DashboardData, ApiError } from '../types';
 import './DashboardPage.css';
 
 export function DashboardPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,8 +16,9 @@ export function DashboardPage() {
     try {
       const response = await citationsApi.getDashboard();
       setData(response);
-    } catch (err: any) {
-      setError(err.error?.message || 'Failed to load dashboard');
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.error?.message || 'Failed to load dashboard');
     } finally {
       setLoading(false);
     }
@@ -51,7 +53,7 @@ export function DashboardPage() {
           <div className="dashboard-section">
             <h2>By Engine</h2>
             <div className="engine-stats">
-              {Object.entries(data.by_engine || {}).map(([engine, count]: [string, any]) => (
+              {Object.entries(data.citations_by_engine || {}).map(([engine, count]) => (
                 <div key={engine} className="engine-stat">
                   <div className="engine-name">{engine}</div>
                   <div className="engine-count">{count}</div>

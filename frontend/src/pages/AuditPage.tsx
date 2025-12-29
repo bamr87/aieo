@@ -113,7 +113,7 @@ export function AuditPage() {
             <div className="gaps-section">
               <h3>Gaps Found</h3>
               <ul>
-                {result.gaps.slice(0, 5).map((gap: any, index: number) => (
+                {result.gaps.slice(0, 5).map((gap, index) => (
                   <li key={index}>
                     <strong>{gap.category}</strong> ({gap.severity}): {gap.description}
                   </li>

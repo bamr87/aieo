@@ -30,9 +30,7 @@ async def verify_api_key(
 
     # Look up in database
     api_key = (
-        db.query(APIKey)
-        .filter(APIKey.key_hash == key_hash, APIKey.is_active)
-        .first()
+        db.query(APIKey).filter(APIKey.key_hash == key_hash, APIKey.is_active).first()
     )
 
     if not api_key:

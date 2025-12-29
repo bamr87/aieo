@@ -8,6 +8,7 @@ from .core.config import settings
 from .core.rate_limit import RateLimitMiddleware
 from .core.logging_config import setup_logging
 from .core.middleware import LoggingMiddleware
+from .core.health import router as health_router
 from .api.v1 import audit, optimize, citations, patterns
 
 # Configure logging
@@ -58,8 +59,6 @@ async def global_exception_handler(request, exc):
 
 
 # Health check endpoints
-from .core.health import router as health_router
-
 app.include_router(health_router)
 
 

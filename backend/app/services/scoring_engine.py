@@ -56,7 +56,7 @@ class ScoringEngine:
         total_score = self._calculate_total_score(pattern_scores, parsed)
 
         # Generate grade
-        grade = self._score_to_grade(total_score)
+        grade = self._score_to_grade(total_score)  # noqa: F841
 
         # Generate gaps
         gaps = self._generate_gaps(pattern_scores, parsed, total_score)

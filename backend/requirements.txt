@@ -5,9 +5,9 @@ pydantic==2.5.3
 pydantic-settings==2.1.0
 
 # Database
-sqlalchemy==2.0.25
+sqlalchemy==2.0.45
 alembic==1.13.1
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.11
 # timescaledb==0.0.4  # Optional - requires Python 3.10+, install separately if needed
 
 # Redis and caching
@@ -26,27 +26,27 @@ qdrant-client>=1.7.1
 
 # Content parsing
 beautifulsoup4==4.12.2
-markdown==3.5.1
-html2text==2024.2.26
+markdown==3.10
+html2text==2025.4.15
 readability-lxml==0.8.1
 
 # NLP
 spacy==3.7.2
 
 # HTTP client
-httpx==0.26.0
-aiohttp==3.9.1
+httpx==0.28.1
+aiohttp==3.13.2
 
 # Utilities
 python-dotenv==1.0.0
-python-multipart==0.0.6
+python-multipart==0.0.21
 python-jose[cryptography]==3.3.0
 
 # Development
 pytest==7.4.4
 pytest-asyncio==0.23.3
-black==24.1.1
+black==25.12.0
 ruff==0.1.11
-mypy==1.8.0
+mypy==1.19.1
 
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { optimizeApi } from '../services/api';
-import { OptimizeResult, ApiError } from '../types';
+import type { OptimizeResult, ApiError } from '../types';
 import './OptimizePage.css';
 
 export function OptimizePage() {
@@ -25,7 +25,7 @@ export function OptimizePage() {
       const response = await optimizeApi.optimize({
         content,
         style,
-      });
+      }) as OptimizeResult;
       setResult(response);
     } catch (err) {
       const apiError = err as ApiError;
@@ -71,7 +71,7 @@ export function OptimizePage() {
           <select
             id="style"
             value={style}
-            onChange={(e) => setStyle(e.target.value)}
+            onChange={(e) => setStyle(e.target.value as 'preserve' | 'aggressive')}
             disabled={loading}
           >
             <option value="preserve">Preserve original style</option>

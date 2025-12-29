@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { auditApi } from '../services/api';
-import { AuditResult, ApiError } from '../types';
+import type { AuditResult, ApiError } from '../types';
 import './AuditPage.css';
 
 export function AuditPage() {
@@ -29,7 +29,7 @@ export function AuditPage() {
         return;
       }
 
-      const response = await auditApi.audit(data);
+      const response = await auditApi.audit(data) as AuditResult;
       setResult(response);
     } catch (err) {
       const apiError = err as ApiError;

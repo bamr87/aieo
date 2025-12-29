@@ -29,7 +29,8 @@ def probe_engines_for_citations(
     db = SessionLocal()
 
     try:
-        citations = tracker.probe_engines(url, prompts, engines)
+        import asyncio
+        citations = asyncio.run(tracker.probe_engines(url, prompts, engines))
         tracker.store_citations(db, citations)
         return {"status": "success", "citations_found": len(citations)}
     except Exception as e:

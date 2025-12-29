@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { patternsApi } from '../services/api';
-import { Pattern, ApiError } from '../types';
+import type { Pattern, ApiError } from '../types';
 import './PatternsPage.css';
 
 export function PatternsPage() {

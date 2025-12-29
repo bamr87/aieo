@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { citationsApi } from '../services/api';
-import { DashboardData, ApiError } from '../types';
+import type { DashboardData, ApiError } from '../types';
 import './DashboardPage.css';
 
 export function DashboardPage() {
@@ -14,7 +14,7 @@ export function DashboardPage() {
 
   const loadDashboard = async () => {
     try {
-      const response = await citationsApi.getDashboard();
+      const response = await citationsApi.getDashboard() as DashboardData;
       setData(response);
     } catch (err) {
       const apiError = err as ApiError;
@@ -70,7 +70,7 @@ export function DashboardPage() {
                   <a href={page.url} target="_blank" rel="noopener noreferrer">
                     {page.url}
                   </a>
-                  <span className="citation-count">{page.count} citations</span>
+                  <span className="citation-count">{page.citation_count} citations</span>
                 </li>
               ))}
             </ul>

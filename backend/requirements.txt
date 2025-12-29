@@ -19,7 +19,7 @@ celery==5.3.4
 
 # AI/ML services
 openai==1.12.0
-anthropic==0.18.1
+anthropic==0.75.0
 
 # Vector database
 qdrant-client>=1.7.1

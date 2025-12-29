@@ -11,7 +11,7 @@ psycopg2-binary==2.9.11
 # timescaledb==0.0.4  # Optional - requires Python 3.10+, install separately if needed
 
 # Redis and caching
-redis==5.0.1
+redis==7.1.0
 hiredis==2.3.2
 
 # Celery for async tasks

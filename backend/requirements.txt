@@ -26,7 +26,7 @@ qdrant-client>=1.7.1
 
 # Content parsing
 beautifulsoup4==4.12.2
-markdown==3.5.1
+markdown==3.10
 html2text==2024.2.26
 readability-lxml==0.8.1
 

@@ -31,7 +31,7 @@ html2text==2025.4.15
 readability-lxml==0.8.1
 
 # NLP
-spacy==3.7.2
+spacy==3.8.11
 
 # HTTP client
 httpx==0.28.1

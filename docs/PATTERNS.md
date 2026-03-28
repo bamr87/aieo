@@ -175,4 +175,40 @@ Patterns are prioritized by citation boost:
 9. Citation Hooks (5-15%)
 10. Meta-Context (5-10%)
 
+## Scoring Weights
+
+The scoring engine assigns the following point weights (normalized to 100):
+
+| Pattern | Max Points | Weight | Detection Method |
+|---------|----------:|-------:|------------------|
+| Structured Data | 20 | 20 | Tables + lists + headers per 500 words |
+| Comparison Tables | 15 | 15 | Table count + comparison keywords (vs, compare, difference) |
+| Recursive Depth | 15 | 15 | Nested questions, follow-up conjunctions |
+| Entity Density | 15 | 15 | Unique named entities per 100 words (requires spaCy) |
+| FAQ Injection | 15 | 15 | FAQ section keywords + question-mark headers |
+| Temporal Anchoring | 10 | 10 | Years, full dates, "as of", version numbers |
+| Citation Hooks | 10 | 10 | "According to", "research by", markdown links, "source:" |
+| Definitional Precision | 10 | 10 | "Is defined as", "refers to", bold-term definitions |
+| Meta-Context | 10 | 10 | "This is important because", "crucially", "essential" |
+| Procedural Clarity | 5 | 5 | "Step N", numbered lists, ordinal sequences |
+
+## Anti-Patterns
+
+The scoring engine also detects and penalizes anti-patterns:
+
+| Anti-Pattern | Penalty | Trigger |
+|--------------|--------:|---------|
+| Over-optimization | −20 | >10 structured elements per 1000 words |
+| Keyword stuffing | −15 | Any word (>4 chars) appears >5% of total words |
+| Missing structure in long content | −15 | >1000 words with no tables and no lists |
+
+## Entity Density Note
+
+Entity density scoring (Pattern 2) requires spaCy with the `en_core_web_sm` model. Without spaCy installed, this pattern always scores 0, limiting the maximum achievable score. Install with:
+
+```bash
+pip install spacy
+python -m spacy download en_core_web_sm
+```
+
 

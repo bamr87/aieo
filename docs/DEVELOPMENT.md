@@ -31,6 +31,26 @@ This guide covers development workflows, coding standards, and best practices fo
    docker-compose up -d
    ```
 
+### Lightweight Setup (Scoring Engine Only)
+
+If you only need the scoring engine (e.g., for batch auditing URLs), you can skip Docker, PostgreSQL, and Redis entirely:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install httpx beautifulsoup4 markdown html2text
+```
+
+This is sufficient to run `run_audit.py` and use the `ScoringEngine` and `ContentParser` classes directly from `backend/app/services/`.
+
+**Optional: Enable entity density scoring with spaCy:**
+```bash
+pip install spacy
+python -m spacy download en_core_web_sm
+```
+
+Without spaCy, entity density (Pattern 2, worth 15 points max) scores 0 for all content. All other 9 patterns work without any external services.
+
 ## Development Workflow
 
 ### Backend Development
@@ -296,12 +316,26 @@ test: add integration tests
 
 ## Common Tasks
 
+### Run Batch Audit on URL List
+
+The quickest way to audit multiple URLs:
+
+1. Add URLs to `sites.txt` (one per line)
+2. Run the standalone audit script:
+   ```bash
+   source venv/bin/activate
+   python run_audit.py
+   ```
+3. Results are saved to a temp directory as JSON files (one per site + `summary.json`)
+
 ### Add New Pattern
 
 1. Update `scoring_engine.py`
 2. Add detection logic
-3. Update tests
-4. Update documentation
+3. Update weight in `_calculate_total_score()`
+4. Add gap info in `_generate_gaps()`
+5. Update tests
+6. Update documentation (PATTERNS.md, CLI.md scoring table)
 
 ### Add New Service
 

@@ -7,40 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Initial release of AIEO (AI Engine Optimization) tool
-- FastAPI backend with REST API
-- React frontend with TypeScript
-- Python CLI tool
-- Content parsing and scoring engine
-- 10 AIEO pattern detection
-- Gap analysis and recommendations
-- Benchmark comparison service
-- Rate limiting and input validation
-- Comprehensive test suite
-- Installation and verification scripts
-- Docker Compose setup
-- Database models and migrations
-- API documentation
+## [0.2.0] - 2026-03-28
 
-### Features
-- Content auditing with AIEO score (0-100)
-- Content optimization suggestions
-- Pattern library with 10 AIEO patterns
-- Citation tracking infrastructure
-- Web UI for content analysis
-- CLI for command-line usage
+### Added
+- **PRD v2.0**: Major update to AIEO Studio – AI Engine Optimization Platform
+  - Executive Summary with full-cycle platform positioning
+  - Intelligent Refactor Agent (P0 feature) for production-ready patches
+  - 6 new AEO-specific patterns: JSON-LD Schema, Semantic HTML, E-E-A-T Signals, Substantiated Claims, Recursive Q&A, Answer-First Structure
+  - GitHub / Copilot / MCP integration as first-class features
+  - zer0-mistakes.com as reference implementation (target: 98+/100)
+  - Hybrid SEO + AEO scope (traditional SEO now in-scope)
+  - Updated scoring rubric with 16 patterns (10 original + 6 new)
+  - Revised roadmap: MVP Q2 2026, Growth Q3 2026, Scale Q4 2026, Enterprise 2027
+- MCP server implementation (`backend/app/mcp_server.py`)
+- Prompt loader service for scoring rubric and system prompts
+- Screenshot service for visual auditing
+- Report generation tooling (`generate_reports.py`, `run_audit.py`)
+- MCP client audit tool (`mcp_client_audit.py`)
+- Scoring prompts and patterns (`backend/prompts/`)
+- Backend Dockerfile for containerized deployment
+- MCP requirements file (`backend/requirements-mcp.txt`)
+- Sample audit reports (`reports/`)
+
+### Changed
+- Scoring engine refactored with updated pattern detection
+- README updated with AIEO Studio branding and expanded documentation
+- Architecture docs updated for MCP and refactoring engine
+- CLI docs expanded with new commands
+- Development docs updated with MCP setup instructions
+- Patterns docs expanded with AEO-specific patterns
+- Docker Compose updated with additional services
+- Backend dependencies updated
 
 ### Documentation
-- README with quick start guide
-- INSTALL.md with detailed installation instructions
-- API documentation
-- CLI documentation
-- Pattern documentation
-- Comprehensive test report
-- Contributing guidelines
-- Code of conduct
-- Security policy
+- PRD expanded from v1.2 to v2.0 with 21 sections (0–20)
+- New personas: Indie Developer, Content Agency PM, SEO Specialist, Open-Source Maintainer
+- New user stories: Repo Refactor via PR, Jekyll Theme Optimization, MCP Agent Integration
+- Updated glossary with AEO, GEO, MCP, JSON-LD, E-E-A-T terms
+- Decision log updated with 7 new decisions
 
 ## [0.1.0] - 2025-12-28
 
@@ -73,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.2.0** (2026-03-28): AIEO Studio v2.0 – Refactor Agent, MCP integration, 6 new AEO patterns, PRD v2.0
 - **0.1.0** (2025-12-28): Initial alpha release
 
 ---

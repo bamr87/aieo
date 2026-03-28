@@ -20,6 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 venv/
+.venv/
 env/
 ENV/
 .pytest_cache/
@@ -30,8 +31,10 @@ htmlcov/
 
 # Virtual environments
 backend/venv/
+backend/.venv/
 backend/env/
 cli/venv/
+cli/.venv/
 cli/env/
 
 # Node

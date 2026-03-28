@@ -1,401 +1,325 @@
-"""Scoring engine for AIEO patterns."""
+"""AI-orchestrated scoring engine for AIEO patterns.
 
-from typing import Dict, List
+This engine uses prompt engineering as its core — all scoring criteria,
+pattern definitions, and evaluation instructions live in external prompt
+files (backend/prompts/). The AI model reads these prompts at runtime and
+evaluates content contextually, replacing hardcoded regex pattern matching.
+
+Supports:
+- OpenAI (GPT-4, GPT-4o, etc.)
+- Anthropic (Claude 3.5, Claude 3, etc.)
+- Heuristic fallback when no API key is configured
+"""
+
+import json
+import logging
+import os
 import re
-
-try:
-    import spacy
-
-    SPACY_AVAILABLE = True
-except ImportError:
-    SPACY_AVAILABLE = False
+from pathlib import Path
+from typing import Dict, List, Optional
 
 from .content_parser import ContentParser
+from .prompt_loader import PromptLoader
+
+logger = logging.getLogger(__name__)
 
 
 class ScoringEngine:
-    """Score content against AIEO patterns."""
+    """Score content against AIEO patterns using AI-driven evaluation.
 
-    def __init__(self):
+    The scoring criteria are defined entirely in prompt files under
+    backend/prompts/. To change scoring behavior, edit the prompts —
+    not this code.
+    """
+
+    def __init__(
+        self,
+        prompts_dir: Optional[Path] = None,
+        provider: Optional[str] = None,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+    ):
         self.parser = ContentParser()
-        # Load spaCy model for NER (will need to download: python -m spacy download en_core_web_sm)
-        self.nlp = None
-        if SPACY_AVAILABLE:
-            try:
-                self.nlp = spacy.load("en_core_web_sm")
-            except (OSError, IOError):
-                # Fallback if model not installed
-                self.nlp = None
+        self.prompt_loader = PromptLoader(prompts_dir)
+        self.provider = provider
+        self.api_key = api_key
+        self.model = model
+        self._resolve_config()
 
-    def score(self, content: str, format: str = "markdown") -> Dict:
-        """
-        Score content and return comprehensive results.
+    def _resolve_config(self):
+        """Resolve provider/key/model from environment if not explicitly set."""
+        if self.api_key:
+            if not self.provider:
+                self.provider = self._detect_provider(self.api_key)
+            return
+
+        # Try loading from the app's config module
+        try:
+            from ..core.config import settings
+            if settings.OPENAI_API_KEY:
+                self.api_key = settings.OPENAI_API_KEY
+                self.provider = self.provider or "openai"
+                self.model = self.model or settings.DEFAULT_AI_MODEL
+            elif settings.ANTHROPIC_API_KEY:
+                self.api_key = settings.ANTHROPIC_API_KEY
+                self.provider = self.provider or "anthropic"
+                self.model = self.model or "claude-sonnet-4-20250514"
+        except (ImportError, Exception):
+            pass  # Running standalone without full backend config
+
+        # Try environment variables directly
+        if not self.api_key:
+            self.api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+            if self.api_key:
+                if os.environ.get("OPENAI_API_KEY"):
+                    self.provider = self.provider or "openai"
+                    self.model = self.model or "gpt-5.4"
+                else:
+                    self.provider = self.provider or "anthropic"
+                    self.model = self.model or "claude-sonnet-4-20250514"
+
+    @staticmethod
+    def _detect_provider(api_key: str) -> str:
+        """Detect provider from API key format."""
+        if api_key.startswith("sk-ant-"):
+            return "anthropic"
+        return "openai"
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def score(self, content: str, format: str = "markdown", screenshot_b64: Optional[str] = None) -> Dict:
+        """Score content and return comprehensive results.
+
+        If an AI API key is configured, uses the AI model to evaluate
+        content contextually against prompt-defined patterns.
+        Otherwise, falls back to lightweight heuristic scoring.
+
+        Args:
+            content: Raw content (HTML or markdown).
+            format: Content format ('markdown' or 'html').
+            screenshot_b64: Optional base64-encoded PNG screenshot for visual analysis.
 
         Returns:
-            Dictionary with score, grade, gaps, and pattern scores
+            Dictionary with score, grade, pattern_scores, gaps,
+            anti_pattern_penalties, word_count, visual_analysis
         """
-        # Parse content
         parsed = self.parser.parse(content, format)
 
-        # Score each pattern
-        pattern_scores = {}
-        pattern_scores["structured_data"] = self._score_structured_data(parsed)
-        pattern_scores["entity_density"] = self._score_entity_density(parsed)
-        pattern_scores["citation_hooks"] = self._score_citation_hooks(parsed)
-        pattern_scores["recursive_depth"] = self._score_recursive_depth(parsed)
-        pattern_scores["temporal_anchoring"] = self._score_temporal_anchoring(parsed)
-        pattern_scores["comparison_tables"] = self._score_comparison_tables(parsed)
-        pattern_scores["definitional_precision"] = self._score_definitional_precision(
-            parsed
+        if self.api_key and self.provider:
+            try:
+                return self._score_with_ai(parsed, screenshot_b64=screenshot_b64)
+            except Exception as e:
+                logger.warning("AI scoring failed, falling back to heuristic: %s", e)
+                return self._score_heuristic(parsed)
+        else:
+            return self._score_heuristic(parsed)
+
+    # ------------------------------------------------------------------
+    # AI-driven scoring
+    # ------------------------------------------------------------------
+
+    def _score_with_ai(self, parsed: Dict, screenshot_b64: Optional[str] = None) -> Dict:
+        """Score content using an AI model with prompt-defined criteria."""
+        system_prompt = self.prompt_loader.load_system_prompt()
+        user_prompt = self.prompt_loader.build_evaluation_prompt(parsed)
+
+        if screenshot_b64:
+            user_prompt += "\n\n## Screenshot\n\nA screenshot of the live page is attached. Use it to evaluate visual layout, design quality, information hierarchy, readability, and UX signals that affect AI citability. Include a `visual_analysis` section in your response."
+
+        raw_response = self._call_ai(system_prompt, user_prompt, screenshot_b64=screenshot_b64)
+        ai_result = self._parse_ai_response(raw_response)
+
+        return self._build_result(ai_result, parsed)
+
+    def _call_ai(self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None) -> str:
+        """Call the AI model and return the raw response text."""
+        if self.provider == "openai":
+            return self._call_openai(system_prompt, user_prompt, screenshot_b64)
+        elif self.provider == "anthropic":
+            return self._call_anthropic(system_prompt, user_prompt, screenshot_b64)
+        else:
+            raise ValueError(f"Unknown AI provider: {self.provider}")
+
+    def _call_openai(self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None) -> str:
+        """Call OpenAI API (sync), with optional vision input."""
+        from openai import OpenAI
+
+        client = OpenAI(api_key=self.api_key)
+
+        # Build user message content — text + optional image
+        user_content: list = [{"type": "text", "text": user_prompt}]
+        if screenshot_b64:
+            user_content.append({
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/png;base64,{screenshot_b64}",
+                    "detail": "high",
+                },
+            })
+
+        response = client.chat.completions.create(
+            model=self.model or "gpt-5.4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            temperature=0.2,
+            response_format={"type": "json_object"},
+            max_completion_tokens=8192,
         )
-        pattern_scores["procedural_clarity"] = self._score_procedural_clarity(parsed)
-        pattern_scores["faq_injection"] = self._score_faq_injection(parsed)
-        pattern_scores["meta_context"] = self._score_meta_context(parsed)
+        return response.choices[0].message.content
 
-        # Calculate total score
-        total_score = self._calculate_total_score(pattern_scores, parsed)
+    def _call_anthropic(self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None) -> str:
+        """Call Anthropic API (sync), with optional vision input."""
+        from anthropic import Anthropic
 
-        # Generate grade
-        grade = self._score_to_grade(total_score)  # noqa: F841
+        client = Anthropic(api_key=self.api_key)
 
-        # Generate gaps
-        gaps = self._generate_gaps(pattern_scores, parsed, total_score)
+        # Build user message content — text + optional image
+        user_content: list = [{"type": "text", "text": user_prompt}]
+        if screenshot_b64:
+            user_content.append({
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": "image/png",
+                    "data": screenshot_b64,
+                },
+            })
 
-        # Detect anti-patterns
-        anti_pattern_penalties = self._detect_anti_patterns(parsed)
-        final_score = max(0, total_score - anti_pattern_penalties)
-        final_grade = self._score_to_grade(final_score)
+        message = client.messages.create(
+            model=self.model or "claude-sonnet-4-20250514",
+            max_tokens=8192,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_content},
+            ],
+        )
+        return message.content[0].text
+
+    def _parse_ai_response(self, raw: str) -> Dict:
+        """Parse the AI's JSON response, handling common formatting issues."""
+        cleaned = raw.strip()
+        if cleaned.startswith("```"):
+            cleaned = re.sub(r"^```(?:json)?\s*\n?", "", cleaned)
+            cleaned = re.sub(r"\n?```\s*$", "", cleaned)
+
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            logger.error("Failed to parse AI JSON: %s\nRaw: %s", e, raw[:500])
+            json_match = re.search(r"\{[\s\S]*\}", cleaned)
+            if json_match:
+                try:
+                    return json.loads(json_match.group())
+                except json.JSONDecodeError:
+                    pass
+            raise ValueError(f"AI returned invalid JSON: {e}")
+
+    def _build_result(self, ai_result: Dict, parsed: Dict) -> Dict:
+        """Build the standardized scoring result from AI output."""
+        patterns = self.prompt_loader.load_patterns()
+        pattern_weights = {p["name"]: p["weight"] for p in patterns}
+        pattern_maxes = {p["name"]: p["max_score"] for p in patterns}
+        expected_names = {p["name"] for p in patterns}
+
+        ai_patterns = ai_result.get("patterns", {})
+        pattern_scores = {}
+
+        for name in expected_names:
+            ai_data = ai_patterns.get(name, {})
+            max_score = pattern_maxes.get(name, 10)
+            raw_score = ai_data.get("score", 0)
+            clamped = max(0, min(max_score, raw_score))
+            pattern_scores[name] = {
+                "score": clamped,
+                "max": max_score,
+                "detected": ai_data.get("detected", False),
+                "evidence": ai_data.get("evidence", []),
+                "recommendation": ai_data.get("recommendation", ""),
+            }
+
+        # Weighted score normalized to 100
+        total_weight = sum(pattern_weights.values())
+        weighted_sum = 0.0
+        for name, data in pattern_scores.items():
+            w = pattern_weights.get(name, 0)
+            m = data["max"]
+            if m > 0:
+                weighted_sum += (data["score"] / m) * w
+        normalized = round((weighted_sum / total_weight) * 100, 1) if total_weight > 0 else 0
+
+        anti = ai_result.get("anti_patterns", {})
+        anti_penalty = min(50, anti.get("penalties", 0))
+        final_score = max(0, normalized - anti_penalty)
+        grade = self._score_to_grade(final_score)
+
+        gaps = self._build_gaps(pattern_scores, pattern_weights)
 
         return {
             "score": final_score,
-            "grade": final_grade,
+            "grade": grade,
             "pattern_scores": pattern_scores,
             "gaps": gaps,
-            "anti_pattern_penalties": anti_pattern_penalties,
+            "anti_pattern_penalties": anti_penalty,
+            "anti_pattern_details": {
+                "detected": anti.get("detected", []),
+                "evidence": anti.get("evidence", []),
+            },
+            "content_type": ai_result.get("content_type", "unknown"),
+            "overall_assessment": ai_result.get("overall_assessment", ""),
+            "executive_summary": ai_result.get("executive_summary", ""),
+            "priority_actions": ai_result.get("priority_actions", []),
+            "sample_improvements": ai_result.get("sample_improvements", []),
+            "visual_analysis": ai_result.get("visual_analysis", {}),
             "word_count": parsed["word_count"],
+            "scoring_method": "ai",
+            "model": self.model,
+            "provider": self.provider,
         }
 
-    def _score_structured_data(self, parsed: Dict) -> Dict:
-        """Pattern 1: Structured Data (tables, lists, headers)."""
-        word_count = parsed["word_count"]
-        if word_count == 0:
-            return {"score": 0, "max": 20, "detected": False}
+    # ------------------------------------------------------------------
+    # Shared helpers
+    # ------------------------------------------------------------------
 
-        # Count structured elements per 500 words
-        tables = len(parsed["tables"])
-        lists = len(parsed["lists"])
-        headers = len(parsed["headers"])
+    def _build_gaps(self, pattern_scores: Dict, pattern_weights: Dict) -> List[Dict]:
+        """Generate gap analysis from pattern scores."""
+        gaps = []
+        for name, data in pattern_scores.items():
+            max_s = data["max"]
+            if max_s == 0:
+                continue
+            ratio = data["score"] / max_s
+            weight = pattern_weights.get(name, 0)
 
-        elements_per_500 = ((tables + lists + headers) / word_count) * 500
+            if ratio < 0.6:
+                if ratio < 0.3:
+                    severity = "high" if weight >= 15 else "medium"
+                else:
+                    severity = "medium" if weight >= 15 else "low"
 
-        # Score: 20 points max, target 2+ elements per 500 words
-        score = min(20, (elements_per_500 / 2) * 20)
+                recommendation = data.get("recommendation", "")
+                if not recommendation:
+                    recommendation = f"Improve {name.replace('_', ' ')} to increase score."
 
-        return {
-            "score": round(score, 1),
-            "max": 20,
-            "detected": elements_per_500 >= 1,
-            "tables": tables,
-            "lists": lists,
-            "headers": headers,
-        }
+                gaps.append({
+                    "id": f"gap_{name}",
+                    "category": name,
+                    "severity": severity,
+                    "description": recommendation,
+                    "pattern_score": data["score"],
+                    "pattern_max": max_s,
+                    "weight": weight,
+                })
 
-    def _score_entity_density(self, parsed: Dict) -> Dict:
-        """Pattern 2: Entity Density (named entities per 100 words)."""
-        word_count = parsed["word_count"]
-        if word_count == 0 or self.nlp is None:
-            return {"score": 0, "max": 15, "detected": False}
+        severity_order = {"high": 0, "medium": 1, "low": 2}
+        gaps.sort(key=lambda g: (severity_order.get(g["severity"], 3), -g["weight"]))
+        return gaps
 
-        # Extract entities using spaCy
-        doc = self.nlp(parsed["text"])
-        entities = [ent.text for ent in doc.ents]
-        entity_count = len(set(entities))  # Unique entities
-
-        # Entities per 100 words
-        entities_per_100 = (entity_count / word_count) * 100
-
-        # Score: 15 points max, target 3+ entities per 100 words
-        score = min(15, (entities_per_100 / 3) * 15)
-
-        return {
-            "score": round(score, 1),
-            "max": 15,
-            "detected": entities_per_100 >= 2,
-            "entity_count": entity_count,
-            "entities_per_100": round(entities_per_100, 1),
-        }
-
-    def _score_citation_hooks(self, parsed: Dict) -> Dict:
-        """Pattern 3: Citation Hooks (explicit source attributions)."""
-        text = parsed["text"].lower()
-
-        # Citation patterns
-        citation_patterns = [
-            r"according to",
-            r"research (from|by|at)",
-            r"study (found|shows|indicates)",
-            r"\[.*\]\(.*\)",  # Markdown links
-            r"source:",
-            r"references?:",
-        ]
-
-        citation_count = sum(
-            len(re.findall(pattern, text)) for pattern in citation_patterns
-        )
-
-        # Score: 10 points max, target 2+ citations per 1000 words
-        word_count = parsed["word_count"]
-        citations_per_1000 = (
-            (citation_count / word_count) * 1000 if word_count > 0 else 0
-        )
-        score = min(10, (citations_per_1000 / 2) * 10)
-
-        return {
-            "score": round(score, 1),
-            "max": 10,
-            "detected": citation_count > 0,
-            "citation_count": citation_count,
-        }
-
-    def _score_recursive_depth(self, parsed: Dict) -> Dict:
-        """Pattern 4: Recursive Depth (nested Q&A, follow-up questions)."""
-        text = parsed["text"]
-
-        # Detect questions
-        question_pattern = r"\?[^?]*\?"
-        questions = re.findall(question_pattern, text)
-
-        # Detect nested structures (questions within answers)
-        nested_pattern = r"(what|how|why|when|where|which).*\?.*(but|however|additionally|furthermore|moreover)"
-        nested_count = len(re.findall(nested_pattern, text, re.IGNORECASE))
-
-        # Score: 15 points max
-        question_score = min(7.5, len(questions) * 1.5)
-        nested_score = min(7.5, nested_count * 2.5)
-        score = question_score + nested_score
-
-        return {
-            "score": round(score, 1),
-            "max": 15,
-            "detected": len(questions) > 0 or nested_count > 0,
-            "question_count": len(questions),
-            "nested_count": nested_count,
-        }
-
-    def _score_temporal_anchoring(self, parsed: Dict) -> Dict:
-        """Pattern 5: Temporal Anchoring (dates, versions, freshness)."""
-        text = parsed["text"]
-
-        # Date patterns
-        date_patterns = [
-            r"\d{4}",  # Years
-            r"(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2},?\s+\d{4}",
-            r"as of",
-            r"updated",
-            r"version\s+\d+",
-            r"v\d+\.\d+",
-        ]
-
-        date_count = sum(
-            len(re.findall(pattern, text, re.IGNORECASE)) for pattern in date_patterns
-        )
-
-        # Score: 10 points max
-        score = min(10, date_count * 2)
-
-        return {
-            "score": round(score, 1),
-            "max": 10,
-            "detected": date_count > 0,
-            "date_count": date_count,
-        }
-
-    def _score_comparison_tables(self, parsed: Dict) -> Dict:
-        """Pattern 6: Comparison Tables."""
-        tables = parsed["tables"]
-        text = parsed["text"].lower()
-
-        # Check for comparison keywords
-        comparison_keywords = [
-            "vs",
-            "versus",
-            "compare",
-            "comparison",
-            "difference",
-            "better",
-            "worse",
-        ]
-        has_comparison_keywords = any(
-            keyword in text for keyword in comparison_keywords
-        )
-
-        # Score: 15 points max
-        table_score = min(10, len(tables) * 5)
-        keyword_score = 5 if has_comparison_keywords else 0
-        score = table_score + keyword_score
-
-        return {
-            "score": round(score, 1),
-            "max": 15,
-            "detected": len(tables) > 0 or has_comparison_keywords,
-            "table_count": len(tables),
-            "has_comparison_keywords": has_comparison_keywords,
-        }
-
-    def _score_definitional_precision(self, parsed: Dict) -> Dict:
-        """Pattern 7: Definitional Precision (explicit definitions)."""
-        text = parsed["text"]
-
-        # Definition patterns
-        definition_patterns = [
-            r"is defined as",
-            r"means",
-            r"refers to",
-            r"is a",
-            r"is an",
-            r"\*\*.*\*\*.*is",  # Bold term followed by "is"
-        ]
-
-        definition_count = sum(
-            len(re.findall(pattern, text, re.IGNORECASE))
-            for pattern in definition_patterns
-        )
-
-        # Score: 10 points max
-        score = min(10, definition_count * 2)
-
-        return {
-            "score": round(score, 1),
-            "max": 10,
-            "detected": definition_count > 0,
-            "definition_count": definition_count,
-        }
-
-    def _score_procedural_clarity(self, parsed: Dict) -> Dict:
-        """Pattern 8: Step-by-Step Procedures."""
-        text = parsed["text"]
-        lists = parsed["lists"]
-
-        # Step patterns
-        step_patterns = [
-            r"step\s+\d+",
-            r"step\s+[a-z]",
-            r"first.*second.*third",
-            r"\d+\.\s+",  # Numbered list items
-        ]
-
-        step_count = sum(
-            len(re.findall(pattern, text, re.IGNORECASE)) for pattern in step_patterns
-        )
-
-        # Ordered lists also count
-        ordered_lists = [lst for lst in lists if lst["type"] == "ordered"]
-        list_items = sum(lst["item_count"] for lst in ordered_lists)
-
-        # Score: 5 points max
-        step_score = min(3, step_count * 0.5)
-        list_score = min(2, min(list_items / 5, 2))
-        score = step_score + list_score
-
-        return {
-            "score": round(score, 1),
-            "max": 5,
-            "detected": step_count > 0 or len(ordered_lists) > 0,
-            "step_count": step_count,
-            "ordered_list_count": len(ordered_lists),
-        }
-
-    def _score_faq_injection(self, parsed: Dict) -> Dict:
-        """Pattern 9: FAQ Injection."""
-        text = parsed["text"]
-        headers = parsed["headers"]
-
-        # FAQ section detection
-        faq_patterns = [
-            r"frequently asked questions",
-            r"faq",
-            r"common questions",
-        ]
-
-        has_faq_section = any(
-            re.search(pattern, text, re.IGNORECASE) for pattern in faq_patterns
-        )
-
-        # Questions in headers
-        question_headers = [h for h in headers if "?" in h["text"]]
-
-        # Score: 15 points max
-        section_score = 10 if has_faq_section else 0
-        header_score = min(5, len(question_headers) * 1)
-        score = section_score + header_score
-
-        return {
-            "score": round(score, 1),
-            "max": 15,
-            "detected": has_faq_section or len(question_headers) > 0,
-            "has_faq_section": has_faq_section,
-            "question_header_count": len(question_headers),
-        }
-
-    def _score_meta_context(self, parsed: Dict) -> Dict:
-        """Pattern 10: Meta-Context (importance explanations)."""
-        text = parsed["text"]
-
-        # Importance phrases
-        importance_patterns = [
-            r"this is important because",
-            r"this is critical because",
-            r"this matters because",
-            r"significantly",
-            r"crucially",
-            r"essential",
-        ]
-
-        importance_count = sum(
-            len(re.findall(pattern, text, re.IGNORECASE))
-            for pattern in importance_patterns
-        )
-
-        # Score: 10 points max (but this is low priority)
-        score = min(10, importance_count * 2)
-
-        return {
-            "score": round(score, 1),
-            "max": 10,
-            "detected": importance_count > 0,
-            "importance_count": importance_count,
-        }
-
-    def _calculate_total_score(self, pattern_scores: Dict, parsed: Dict) -> float:
-        """Calculate total score from pattern scores."""
-        # Weights from PRD Section 8
-        weights = {
-            "structured_data": 20,
-            "comparison_tables": 15,
-            "recursive_depth": 15,
-            "entity_density": 15,
-            "temporal_anchoring": 10,
-            "citation_hooks": 10,
-            "definitional_precision": 10,
-            "procedural_clarity": 5,
-            "faq_injection": 15,  # Added to match PRD
-            "meta_context": 10,  # Added to match PRD
-        }
-
-        total = 0
-        for pattern, score_data in pattern_scores.items():
-            if pattern in weights:
-                # Normalize score to weight
-                max_score = score_data.get("max", weights[pattern])
-                score = score_data.get("score", 0)
-                normalized = (
-                    (score / max_score) * weights[pattern] if max_score > 0 else 0
-                )
-                total += normalized
-
-        return round(total, 1)
-
-    def _score_to_grade(self, score: float) -> str:
+    @staticmethod
+    def _score_to_grade(score: float) -> str:
         """Convert score to letter grade."""
         if score >= 90:
             return "A+"
@@ -410,121 +334,214 @@ class ScoringEngine:
         else:
             return "F"
 
-    def _generate_gaps(
-        self, pattern_scores: Dict, parsed: Dict, total_score: float
-    ) -> List[Dict]:
-        """Generate gap analysis."""
-        gaps = []
+    # ------------------------------------------------------------------
+    # Heuristic fallback (no API key)
+    # ------------------------------------------------------------------
 
-        gap_categories = {
-            "structured_data": {
-                "category": "structure",
-                "severity": "high",
-                "description": "Missing structured data (tables, lists, headers)",
-            },
-            "comparison_tables": {
-                "category": "comparison",
-                "severity": "high",
-                "description": "No comparison tables found",
-            },
-            "recursive_depth": {
-                "category": "recursion",
-                "severity": "high",
-                "description": "Missing recursive depth (nested Q&A)",
-            },
-            "entity_density": {
-                "category": "entities",
-                "severity": "medium",
-                "description": "Low entity density",
-            },
-            "temporal_anchoring": {
-                "category": "temporal",
-                "severity": "medium",
-                "description": "Missing temporal anchors (dates, versions)",
-            },
-            "citation_hooks": {
-                "category": "citations",
-                "severity": "medium",
-                "description": "Missing citation hooks",
-            },
-            "definitional_precision": {
-                "category": "definition",
-                "severity": "low",
-                "description": "Missing explicit definitions",
-            },
-            "procedural_clarity": {
-                "category": "procedural",
-                "severity": "low",
-                "description": "Missing step-by-step procedures",
-            },
-            "faq_injection": {
-                "category": "faq",
-                "severity": "medium",
-                "description": "Missing FAQ section",
-            },
-            "meta_context": {
-                "category": "meta",
-                "severity": "low",
-                "description": "Missing meta-context explanations",
-            },
+    def _score_heuristic(self, parsed: Dict) -> Dict:
+        """Lightweight heuristic scoring when no AI API key is available.
+
+        Provides a structural baseline — edit the prompt files and configure
+        an AI API key for full contextual scoring.
+        """
+        patterns = self.prompt_loader.load_patterns()
+        pattern_weights = {p["name"]: p["weight"] for p in patterns}
+        pattern_maxes = {p["name"]: p["max_score"] for p in patterns}
+
+        pattern_scores = {}
+        for p in patterns:
+            name = p["name"]
+            scorer = _HEURISTIC_SCORERS.get(name)
+            if scorer:
+                pattern_scores[name] = scorer(parsed, p["max_score"])
+            else:
+                pattern_scores[name] = {
+                    "score": 0, "max": p["max_score"], "detected": False,
+                    "evidence": [], "recommendation": f"Configure AI API key for {name} scoring.",
+                }
+
+        total_weight = sum(pattern_weights.values())
+        weighted_sum = 0.0
+        for name, data in pattern_scores.items():
+            w = pattern_weights.get(name, 0)
+            m = data["max"]
+            if m > 0:
+                weighted_sum += (data["score"] / m) * w
+        normalized = round((weighted_sum / total_weight) * 100, 1) if total_weight > 0 else 0
+
+        anti_penalty = _heuristic_anti_patterns(parsed)
+        final_score = max(0, normalized - anti_penalty)
+        grade = self._score_to_grade(final_score)
+        gaps = self._build_gaps(pattern_scores, pattern_weights)
+
+        return {
+            "score": final_score,
+            "grade": grade,
+            "pattern_scores": pattern_scores,
+            "gaps": gaps,
+            "anti_pattern_penalties": anti_penalty,
+            "anti_pattern_details": {"detected": [], "evidence": []},
+            "content_type": "unknown",
+            "overall_assessment": "Scored with heuristic fallback. Configure an AI API key for contextual analysis.",
+            "word_count": parsed["word_count"],
+            "scoring_method": "heuristic",
+            "model": None,
+            "provider": None,
         }
 
-        for pattern, score_data in pattern_scores.items():
-            if not score_data.get("detected", False) and pattern in gap_categories:
-                gap_info = gap_categories[pattern]
-                gaps.append(
-                    {
-                        "id": f"gap_{pattern}",
-                        "category": gap_info["category"],
-                        "severity": gap_info["severity"],
-                        "description": gap_info["description"],
-                        "location": {"start": 0, "end": 100},
-                        "example_fix": f"Add {pattern.replace('_', ' ')} to improve score",
-                    }
-                )
 
-        # Sort by severity (high > medium > low)
-        severity_order = {"high": 0, "medium": 1, "low": 2}
-        gaps.sort(key=lambda x: severity_order.get(x["severity"], 3))
+# ======================================================================
+# Heuristic scorer functions (module-level, stateless)
+# ======================================================================
 
-        return gaps
+def _h_structured_data(parsed: Dict, max_score: int) -> Dict:
+    wc = parsed["word_count"] or 1
+    t, l, h = len(parsed["tables"]), len(parsed["lists"]), len(parsed["headers"])
+    density = ((t + l + h) / wc) * 500
+    score = min(max_score, (density / 2) * max_score)
+    return {"score": round(score, 1), "max": max_score, "detected": density >= 1,
+            "evidence": [f"{t} tables, {l} lists, {h} headers"],
+            "recommendation": "Add tables or lists to organize your content."}
 
-    def _detect_anti_patterns(self, parsed: Dict) -> int:
-        """Detect anti-patterns and return penalty points."""
-        penalties = 0
-        text = parsed["text"].lower()
-        word_count = parsed["word_count"]
 
-        # Over-optimization: Too many patterns in small space
-        if word_count > 0:
-            pattern_density = (
-                (len(parsed["tables"]) + len(parsed["lists"]) + len(parsed["headers"]))
-                / word_count
-                * 1000
-            )
-            if pattern_density > 10:  # More than 10 patterns per 1000 words
-                penalties += 20
+def _h_entity_density(parsed: Dict, max_score: int) -> Dict:
+    text, wc = parsed["text"], parsed["word_count"] or 1
+    caps = set(re.findall(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b", text))
+    acros = set(re.findall(r"\b[A-Z]{2,6}\b", text))
+    stops = {"THE", "AND", "FOR", "BUT", "NOT", "YOU", "ALL", "CAN", "HER", "WAS",
+             "ONE", "OUR", "OUT", "ARE", "HAS", "HIS", "HOW", "ITS", "FROM", "WITH",
+             "THIS", "THAT", "HAVE", "WILL", "WHAT", "WHEN"}
+    ents = {e for e in (caps | acros) if e.upper() not in stops and len(e) > 1}
+    per100 = (len(ents) / wc) * 100
+    score = min(max_score, (per100 / 3) * max_score)
+    return {"score": round(score, 1), "max": max_score, "detected": per100 >= 1,
+            "evidence": [f"{len(ents)} entities ({round(per100, 1)} per 100 words)"],
+            "recommendation": "Add specific names, organizations, and product references."}
 
-        # Keyword stuffing: Repeated phrases
-        words = text.split()
-        if len(words) > 0:
-            word_freq = {}
-            for word in words:
-                if len(word) > 4:  # Only check longer words
-                    word_freq[word] = word_freq.get(word, 0) + 1
 
-            # Check for excessive repetition
-            for word, count in word_freq.items():
-                if count > len(words) * 0.05:  # Word appears >5% of the time
-                    penalties += 15
-                    break
+def _h_citation_hooks(parsed: Dict, max_score: int) -> Dict:
+    text = parsed["text"].lower()
+    pats = [r"according to\b", r"research (?:from|by)\b", r"study (?:found|shows)\b",
+            r"source:", r"references?:", r"published (?:by|in)\b"]
+    count = sum(len(re.findall(p, text)) for p in pats)
+    ext = [l for l in parsed.get("links", []) if l.get("url", "").startswith(("http://", "https://"))]
+    count += len(ext)
+    wc = parsed["word_count"] or 1
+    per1k = (count / wc) * 1000
+    score = min(max_score, (per1k / 2) * max_score)
+    return {"score": round(score, 1), "max": max_score, "detected": count > 0,
+            "evidence": [f"{count} citation signals ({len(ext)} external links)"],
+            "recommendation": "Add source attributions like 'According to [source]...'"}
 
-        # Missing structure in long content
-        if (
-            word_count > 1000
-            and len(parsed["tables"]) == 0
-            and len(parsed["lists"]) == 0
-        ):
-            penalties += 15
 
-        return penalties
+def _h_recursive_depth(parsed: Dict, max_score: int) -> Dict:
+    text = parsed["text"]
+    qs = re.findall(r"[^.!?\n]+\?", text)
+    qh = [h for h in parsed["headers"] if "?" in h["text"]]
+    score = min(max_score, len(qs) * 0.5 + len(qh) * 2.5)
+    return {"score": round(score, 1), "max": max_score, "detected": len(qs) > 0,
+            "evidence": [f"{len(qs)} questions, {len(qh)} question headers"],
+            "recommendation": "Add FAQ sections or question-style headers."}
+
+
+def _h_temporal_anchoring(parsed: Dict, max_score: int) -> Dict:
+    text = parsed["text"]
+    years = set(re.findall(r"\b(?:19|20)\d{2}\b", text))
+    fresh = re.findall(r"(?:as of|updated|version\s+\d)", text, re.IGNORECASE)
+    count = len(years) + len(fresh)
+    score = min(max_score, count * 2)
+    return {"score": round(score, 1), "max": max_score, "detected": count > 0,
+            "evidence": [f"{len(years)} year references, {len(fresh)} freshness signals"],
+            "recommendation": "Add dates, version numbers, or 'as of [date]' markers."}
+
+
+def _h_comparison_tables(parsed: Dict, max_score: int) -> Dict:
+    t = parsed["tables"]
+    score = min(max_score, len(t) * 5)
+    return {"score": round(score, 1), "max": max_score, "detected": len(t) > 0,
+            "evidence": [f"{len(t)} tables found"],
+            "recommendation": "Add comparison tables for key topics."}
+
+
+def _h_definitional_precision(parsed: Dict, max_score: int) -> Dict:
+    text = parsed["text"]
+    defs = re.findall(r"(?:is defined as|refers to|means that)\b", text, re.IGNORECASE)
+    score = min(max_score, len(defs) * 3)
+    return {"score": round(score, 1), "max": max_score, "detected": len(defs) > 0,
+            "evidence": [f"{len(defs)} definitional phrases"],
+            "recommendation": "Add explicit definitions for key terms."}
+
+
+def _h_procedural_clarity(parsed: Dict, max_score: int) -> Dict:
+    text = parsed["text"]
+    steps = re.findall(r"step\s+\d+", text, re.IGNORECASE)
+    ordered = [l for l in parsed["lists"] if l["type"] == "ordered"]
+    score = min(max_score, len(steps) * 0.5 + len(ordered) * 1)
+    return {"score": round(score, 1), "max": max_score,
+            "detected": len(steps) > 0 or len(ordered) > 0,
+            "evidence": [f"{len(steps)} step refs, {len(ordered)} ordered lists"],
+            "recommendation": "Add numbered step-by-step instructions."}
+
+
+def _h_faq_injection(parsed: Dict, max_score: int) -> Dict:
+    text = parsed["text"].lower()
+    has_faq = bool(re.search(r"(?:frequently asked questions|faq|common questions)", text))
+    qh = [h for h in parsed["headers"] if "?" in h["text"]]
+    score = min(max_score, (8 if has_faq else 0) + min(4, len(qh)))
+    return {"score": round(score, 1), "max": max_score,
+            "detected": has_faq or len(qh) > 0,
+            "evidence": [f"FAQ section: {'yes' if has_faq else 'no'}, {len(qh)} question headers"],
+            "recommendation": "Add a FAQ section with common questions."}
+
+
+def _h_meta_context(parsed: Dict, max_score: int) -> Dict:
+    text = parsed["text"].lower()
+    pats = [r"this (?:is |matters? )(?:important|critical|crucial) because",
+            r"significantly", r"essential"]
+    count = sum(len(re.findall(p, text)) for p in pats)
+    score = min(max_score, count * 2)
+    return {"score": round(score, 1), "max": max_score, "detected": count > 0,
+            "evidence": [f"{count} meta-context signals"],
+            "recommendation": "Explain why your content matters to the reader."}
+
+
+_HEURISTIC_SCORERS = {
+    "structured_data": _h_structured_data,
+    "entity_density": _h_entity_density,
+    "citation_hooks": _h_citation_hooks,
+    "recursive_depth": _h_recursive_depth,
+    "temporal_anchoring": _h_temporal_anchoring,
+    "comparison_tables": _h_comparison_tables,
+    "definitional_precision": _h_definitional_precision,
+    "procedural_clarity": _h_procedural_clarity,
+    "faq_injection": _h_faq_injection,
+    "meta_context": _h_meta_context,
+}
+
+
+def _heuristic_anti_patterns(parsed: Dict) -> int:
+    """Detect anti-patterns via heuristic checks."""
+    penalties = 0
+    text = parsed["text"].lower()
+    wc = parsed["word_count"]
+
+    if wc > 0:
+        density = (len(parsed["tables"]) + len(parsed["lists"]) + len(parsed["headers"])) / wc * 1000
+        if density > 10:
+            penalties += 20
+
+    words = text.split()
+    if words:
+        freq: Dict[str, int] = {}
+        for w in words:
+            if len(w) > 4:
+                freq[w] = freq.get(w, 0) + 1
+        for _, c in freq.items():
+            if c > len(words) * 0.05:
+                penalties += 15
+                break
+
+    if wc > 1000 and not parsed["tables"] and not parsed["lists"]:
+        penalties += 15
+
+    return penalties

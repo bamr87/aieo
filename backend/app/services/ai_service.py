@@ -97,7 +97,7 @@ Return the optimized content:"""
 
         try:
             response = await self.openai_client.chat.completions.create(
-                model=model if model.startswith("gpt") else "gpt-4",
+                model=model if model.startswith("gpt") else "gpt-5.4",
                 messages=[
                     {
                         "role": "system",

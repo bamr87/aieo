@@ -50,22 +50,26 @@ backend/
 **Key Services:**
 
 1. **Scoring Engine** (`scoring_engine.py`)
-   - Detects 10 AIEO patterns
-   - Calculates score (0-100)
-   - Identifies gaps
+   - Detects 10 AIEO patterns with weighted scoring (total: 125 max raw → normalized to 100)
+   - Calculates composite score (0-100) and letter grade
+   - Identifies gaps (missing patterns) sorted by severity
+   - Detects anti-patterns (over-optimization, keyword stuffing, missing structure) and applies penalties
+   - Can run standalone without any external services (except optional spaCy for entity density)
 
 2. **Content Parser** (`content_parser.py`)
-   - Parses markdown and HTML
-   - Extracts structured elements
-   - Identifies entities
+   - Parses markdown and HTML via `markdown` + `beautifulsoup4`
+   - Extracts: headers, tables, lists, links, word count, content hash
+   - HTML-to-markdown conversion via `html2text` for URL-fetched content
+   - No external service dependencies
 
 3. **Audit Service** (`audit_service.py`)
-   - Orchestrates content analysis
-   - Generates audit reports
-   - Caches results
+   - Orchestrates content analysis (URL fetching → parsing → scoring → benchmarking)
+   - Redis-based caching (content hash as cache key)
+   - Generates audit reports with benchmark percentiles
+   - Requires full backend stack (Redis, PostgreSQL, Qdrant)
 
 4. **Optimize Service** (`optimize_service.py`)
-   - Applies AIEO patterns
+   - Applies AIEO patterns via AI (OpenAI GPT-4 or Anthropic Claude)
    - Uses AI for content optimization
    - Generates change recommendations
 
@@ -102,6 +106,33 @@ frontend/
 - `aieo optimize` - Optimize content
 - `aieo dashboard` - View metrics
 
+## Operational Modes
+
+### Full Stack Mode (API + Services)
+
+Requires: PostgreSQL, Redis, Docker (optional: Qdrant, OpenAI/Anthropic)
+
+All features available: API endpoints, caching, optimization, citation tracking, benchmarking.
+
+### Standalone Mode (Scoring Engine Only)
+
+Requires: `httpx`, `beautifulsoup4`, `markdown`, `html2text` (optional: `spacy`)
+
+The `run_audit.py` script uses the scoring engine directly, bypassing the API stack. This is ideal for batch auditing URLs without running infrastructure services. The script:
+
+1. Reads URLs from `sites.txt`
+2. Fetches HTML content via `httpx`
+3. Passes content through `ContentParser` (HTML → structured data)
+4. Scores against all 10 AIEO patterns via `ScoringEngine`
+5. Outputs per-site JSON + summary to a temp directory
+
+**Limitations of standalone mode:**
+- No caching (each run re-fetches and re-scores)
+- No AI-powered optimization (requires OpenAI/Anthropic keys + API)
+- No benchmark percentile (requires Qdrant vector DB)
+- No citation tracking
+- Entity density scoring requires separate `spacy` + `en_core_web_sm` install
+
 ## Data Flow
 
 ### Audit Flow
@@ -115,7 +146,7 @@ Scoring Engine (detect patterns)
     ↓
 Gap Analysis (identify improvements)
     ↓
-Benchmark Comparison (percentile ranking)
+Benchmark Comparison (percentile ranking)   ← skipped in standalone mode
     ↓
 Audit Result (score + recommendations)
 ```

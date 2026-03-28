@@ -1,6 +1,37 @@
 version: '3.8'
 
 services:
+  # ---------- AIEO MCP Server + Audit Client ----------
+  mcp-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aieo-mcp-server
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      - ./reports:/app/reports
+      - ./sites.txt:/app/sites.txt:ro
+    # Default: runs the MCP server on stdio (for MCP clients to connect)
+    command: ["python", "-m", "app.mcp_server"]
+    stdin_open: true
+
+  mcp-audit:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aieo-mcp-audit
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      - ./reports:/app/reports
+      - ./sites.txt:/app/sites.txt:ro
+      - ./mcp_client_audit.py:/app/mcp_client_audit.py:ro
+    command: ["python", "/app/mcp_client_audit.py", "--sites", "/app/sites.txt", "--output", "/app/reports"]
+
+  # ---------- Infrastructure Services ----------
   postgres:
     image: timescale/timescaledb:latest-pg16
     container_name: aieo-postgres

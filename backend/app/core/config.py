@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # AI Services
     OPENAI_API_KEY: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
-    DEFAULT_AI_MODEL: str = "gpt-4"
+    DEFAULT_AI_MODEL: str = "gpt-5.4"
 
     # Vector DB
     QDRANT_URL: str = "http://localhost:6333"

@@ -23,14 +23,30 @@ from urllib.parse import urlparse
 # ---------------------------------------------------------------------------
 
 def load_site_reports(input_dir: Path) -> list[dict]:
-    """Load all individual site JSON files (excludes summary.json)."""
+    """Load individual site JSON files from per-domain subdirectories.
+
+    Expected layout:  input_dir/<domain_ext>/<domain_ext>.json
+    Falls back to flat layout: input_dir/<domain_ext>.json
+    """
     reports = []
-    for f in sorted(input_dir.glob("*.json")):
+    # Try subdirectory layout first
+    for f in sorted(input_dir.glob("*/*.json")):
         if f.name == "summary.json":
             continue
         data = json.loads(f.read_text())
-        data["_source_file"] = f.name
+        # Store path relative to input_dir (e.g. "domain_ext/domain_ext.json")
+        data["_source_file"] = str(f.relative_to(input_dir))
+        data["_site_dir"] = f.parent.name
         reports.append(data)
+    # Fallback: flat layout (no subdirectories)
+    if not reports:
+        for f in sorted(input_dir.glob("*.json")):
+            if f.name == "summary.json":
+                continue
+            data = json.loads(f.read_text())
+            data["_source_file"] = f.name
+            data["_site_dir"] = ""
+            reports.append(data)
     return reports
 
 
@@ -55,6 +71,16 @@ def site_label(url: str) -> str:
     host = parsed.netloc.replace("www.", "")
     path = parsed.path.strip("/")
     return f"{host}/{path}" if path else host
+
+
+def _report_link(data: dict) -> str:
+    """Return the relative path from REPORT.md to the per-site .md file."""
+    site_dir = data.get("_site_dir", "")
+    json_name = Path(data.get("_source_file", "")).name
+    md_name = json_name.replace(".json", ".md")
+    if site_dir:
+        return f"{site_dir}/{md_name}"
+    return md_name
 
 
 def format_score(score) -> str:
@@ -328,7 +354,7 @@ def render_summary_report(reports: list[dict]) -> str:
     w("")
     for r in ranked:
         label = site_label(r["url"])
-        fname = r.get("_source_file", "").replace(".json", ".md")
+        fname = _report_link(r)
         score_val = format_score(r["score"])
         grade_val = r.get("grade", "?")
         assessment = r.get("overall_assessment", "")
@@ -450,7 +476,7 @@ def render_summary_report(reports: list[dict]) -> str:
     w("")
     for r in ranked:
         label = site_label(r["url"])
-        fname = r.get("_source_file", "").replace(".json", ".md")
+        fname = _report_link(r)
         w(f"- [{label}]({fname}) — {format_score(r['score'])} / 100")
     w("")
 
@@ -477,18 +503,27 @@ def generate(input_dir: str = "reports", output_dir: str | None = None):
 
     print(f"Found {len(reports)} site reports in {inp}")
 
-    # Generate per-site reports
+    # Generate per-site reports into subdirectories
     for data in reports:
         md = render_site_report(data)
-        fname = data["_source_file"].replace(".json", ".md")
-        (out / fname).write_text(md)
+        site_dir = data.get("_site_dir", "")
+        json_name = Path(data["_source_file"]).name
+        md_name = json_name.replace(".json", ".md")
+        if site_dir:
+            dest_dir = out / site_dir
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            (dest_dir / md_name).write_text(md)
+            rel_path = f"{site_dir}/{md_name}"
+        else:
+            (out / md_name).write_text(md)
+            rel_path = md_name
         label = site_label(data.get("url", ""))
-        print(f"  ✓ {fname:<40} {format_score(data.get('score', 0)):>5} / 100  ({label})")
+        print(f"  ✓ {rel_path:<50} {format_score(data.get('score', 0)):>5} / 100  ({label})")
 
-    # Generate summary report
+    # Generate summary report at reports root
     summary_md = render_summary_report(reports)
     (out / "REPORT.md").write_text(summary_md)
-    print(f"  ✓ {'REPORT.md':<40} (summary of all {len(reports)} sites)")
+    print(f"  ✓ {'REPORT.md':<50} (summary of all {len(reports)} sites)")
 
     print(f"\nAll reports written to {out}/")
 

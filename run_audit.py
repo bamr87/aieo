@@ -122,9 +122,11 @@ def main():
             result["error"] = str(e)
             print(f"  ERROR: {e}")
 
-        # Save individual result
+        # Save individual result into per-domain subdirectory
         filename = url_to_filename(url)
-        result_path = output_dir / f"{filename}.json"
+        site_dir = output_dir / filename
+        site_dir.mkdir(parents=True, exist_ok=True)
+        result_path = site_dir / f"{filename}.json"
         result_path.write_text(json.dumps(result, indent=2, default=str))
 
         summary.append({

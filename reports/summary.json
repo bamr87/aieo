@@ -1,0 +1,102 @@
+[
+  {
+    "url": "https://soprisaccounting.com/",
+    "status": "success",
+    "score": 17.6,
+    "grade": "F",
+    "word_count": 725,
+    "gap_count": 8,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://www.embodymylife.com/",
+    "status": "success",
+    "score": 11.600000000000001,
+    "grade": "F",
+    "word_count": 1760,
+    "gap_count": 9,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://www.katherinerosewoller.com/",
+    "status": "success",
+    "score": 21.200000000000003,
+    "grade": "F",
+    "word_count": 874,
+    "gap_count": 8,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://www.julieholunga.com/",
+    "status": "success",
+    "score": 28.0,
+    "grade": "F",
+    "word_count": 1127,
+    "gap_count": 7,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://enjoythestories.com/",
+    "status": "success",
+    "score": 18.4,
+    "grade": "F",
+    "word_count": 1712,
+    "gap_count": 8,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://www.jenny-robinson.com/",
+    "status": "success",
+    "score": 18.4,
+    "grade": "F",
+    "word_count": 633,
+    "gap_count": 8,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://www.jennyrobinsonclark.com/",
+    "status": "success",
+    "score": 17.6,
+    "grade": "F",
+    "word_count": 1490,
+    "gap_count": 8,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://www.hcmsllc.com/leadership",
+    "status": "success",
+    "score": 22.4,
+    "grade": "F",
+    "word_count": 1652,
+    "gap_count": 8,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://copollinginstitute.org/",
+    "status": "success",
+    "score": 31.6,
+    "grade": "F",
+    "word_count": 629,
+    "gap_count": 7,
+    "method": "ai",
+    "error": null
+  },
+  {
+    "url": "https://www.dollyvenables.com/",
+    "status": "success",
+    "score": 13.600000000000001,
+    "grade": "F",
+    "word_count": 1570,
+    "gap_count": 8,
+    "method": "ai",
+    "error": null
+  }
+]

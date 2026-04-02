@@ -1,0 +1,189 @@
+{
+  "url": "https://copollinginstitute.org/",
+  "timestamp": "2026-03-30T22:09:14.529138",
+  "status": "success",
+  "score": 31.6,
+  "grade": "F",
+  "word_count": 629,
+  "scoring_method": "ai",
+  "content_type": "landing_page",
+  "overall_assessment": "This page has strong temporal anchoring, solid entity specificity, and a usable header structure, which gives AI engines some confidence about what the organization publishes and when. Its main weakness is that it functions more as a navigational landing page than a citable knowledge asset: it lacks definitions, FAQ-style answers, methodology details, and structured summaries of poll findings that AI systems can quote directly.",
+  "pattern_scores": {
+    "meta_context": {
+      "score": 6,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The mission statement explains why the organization exists: \u201celevates the public dialogue and promotes informed decision-making\u201d",
+        "The page identifies audience relevance through the endorsement quote calling CPI \u201can invaluable tool for policy-makers, the press, and the public.\u201d",
+        "It provides some broader significance: \u201cWith so much partisan noise in our politics, I appreciate having a reliable and nonpartisan resource for knowing where voters stand...\u201d"
+      ],
+      "recommendation": "Expand the \u201cColorado Insights\u201d area with 2\u20133 sentences explaining why these polls matter now, who should use them, and what decisions they inform in Colorado policy, media coverage, and civic engagement."
+    },
+    "citation_hooks": {
+      "score": 4.5,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page includes attributed quotations: \u201cPublic opinion is the real ruler of a democracy.\u201d \u2013 George Gallup",
+        "It also attributes endorsements to named officials: \u201cYou can't know what you don't measure...\u201d \u2013 State Senator Chris Hansen (D-Denver)",
+        "A second endorsement is attributed to \u201cHouse Minority Leader Rose Pugliese (R-Colorado Springs)\u201d",
+        "The page claims transparency: \u201cCPI releases all of the questions, analysis, and crosstabs for each of its surveys.\u201d"
+      ],
+      "recommendation": "Add a short methodology-and-sources block under each poll release with sample size, field dates, mode, margin of error, and direct links labeled \u201cQuestionnaire,\u201d \u201cCrosstabs,\u201d and \u201cMethodology PDF\u201d so AI engines can cite verifiable evidence rather than only promotional summaries."
+    },
+    "comparison_tables": {
+      "score": 0,
+      "max": 15,
+      "detected": false,
+      "evidence": [
+        "No tables are present on the page.",
+        "Poll releases are listed sequentially, but there is no side-by-side comparison of polls, issues, dates, or findings."
+      ],
+      "recommendation": "Add a comparison table for recent polls with columns for poll name, geography, field dates, sample, top issues covered, and key findings so users and AI systems can compare releases directly."
+    },
+    "definitional_precision": {
+      "score": 3,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page gives a basic organizational description: \u201cThe nonpartisan Colorado Polling Institute (CPI) elevates the public dialogue and promotes informed decision-making through timely, trustworthy public opinion research...\u201d",
+        "It states a transparency practice: \u201cCPI releases all of the questions, analysis, and crosstabs for each of its surveys.\u201d",
+        "However, terms such as \u201ccrosstabs,\u201d \u201cstatewide poll,\u201d \u201cDenver poll,\u201d and \u201cnonpartisan\u201d are not explicitly defined."
+      ],
+      "recommendation": "Add a \u201cHow to Read Our Polls\u201d section that defines key terms used on the page\u2014especially \u201cstatewide poll,\u201d \u201ccrosstabs,\u201d \u201cpress release,\u201d and \u201cnonpartisan\u201d\u2014in one-sentence, quote-ready definitions."
+    },
+    "recursive_depth": {
+      "score": 3.5,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "The page gives a top-level overview of CPI and links to polls, press releases, and data materials.",
+        "It partially anticipates a follow-up question by stating: \u201cCPI releases all of the questions, analysis, and crosstabs for each of its surveys.\u201d",
+        "But it does not answer likely next questions such as what each poll found, how the polling is conducted, who is surveyed, or how to interpret issue tags."
+      ],
+      "recommendation": "For each featured poll, add a 3-layer content block: one-sentence summary, 3\u20135 key findings, and a \u201cMethodology & Downloads\u201d subsection to answer both initial and follow-up user questions on the same page."
+    },
+    "faq_injection": {
+      "score": 0,
+      "max": 15,
+      "detected": false,
+      "evidence": [
+        "There is no FAQ section on the page.",
+        "None of the headers are phrased as user questions such as \u201cWhat does this poll cover?\u201d or \u201cHow can I access crosstabs?\u201d"
+      ],
+      "recommendation": "Add a concise FAQ below \u201cLatest Poll Releases\u201d answering real user questions like \u201cWhat is included in each poll release?\u201d, \u201cHow often does CPI publish polls?\u201d, and \u201cWhere can I download crosstabs and questionnaires?\u201d"
+    },
+    "temporal_anchoring": {
+      "score": 9,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page includes explicit release dates such as \u201cRelease Date: November 20th, 2025\u201d and \u201cRelease Date: August 31st, 2025\u201d",
+        "Poll titles include date/version-like markers: \u201c2025-11: November Statewide Poll,\u201d \u201c2025-08: August Denver Poll,\u201d and \u201c2025-03: March Statewide Poll\u201d",
+        "It uses freshness language in headings like \u201cLatest Poll Releases\u201d and \u201cView Our Latest\u201d"
+      ],
+      "recommendation": "Add a visible \u201cLast updated\u201d timestamp for the page itself and include field dates for each poll, not just release dates, so AI engines can assess both publication freshness and data recency."
+    },
+    "entity_density": {
+      "score": 11.5,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "The page names the organization repeatedly: \u201cColorado Polling Institute (CPI)\u201d",
+        "It includes specific dates such as \u201cNovember 20th, 2025,\u201d \u201cNovember 21st, 2025,\u201d \u201cAugust 31st, 2025,\u201d and \u201cApril 8th, 2025\u201d",
+        "It includes named people and roles: \u201cGeorge Gallup,\u201d \u201cState Senator Chris Hansen (D-Denver),\u201d and \u201cHouse Minority Leader Rose Pugliese (R-Colorado Springs)\u201d",
+        "It includes specific locations and poll entities: \u201cColorado,\u201d \u201cDenver,\u201d \u201c2025-11: November Statewide Poll,\u201d and \u201c2025-08: August Denver Poll\u201d"
+      ],
+      "recommendation": "Increase entity specificity inside each poll summary by naming the exact survey population, sponsoring organization, field period, and major issue findings so the entity richness appears in the body content, not just titles and navigation."
+    },
+    "structured_data": {
+      "score": 11,
+      "max": 20,
+      "detected": true,
+      "evidence": [
+        "The page uses a strong header hierarchy with 17 headers including \u201cLatest Poll Releases\u201d and individual poll titles.",
+        "There are multiple unordered lists, including one with 21 items and another with 8 items.",
+        "The content is segmented into sections such as \u201cView Our Latest,\u201d \u201cColorado Insights,\u201d \u201cStay Informed,\u201d and \u201cSupport Our Work.\u201d",
+        "However, there are no tables, and much of the extracted text reads like compressed navigation plus content rather than clearly separated structured blocks."
+      ],
+      "recommendation": "Convert the poll release listings into a repeatable structured card or table format with fixed fields\u2014release date, geography, issues, summary, and download links\u2014to make extraction cleaner for AI systems."
+    },
+    "procedural_clarity": {
+      "score": 1,
+      "max": 5,
+      "detected": true,
+      "evidence": [
+        "The page includes action prompts such as \u201cGo to Poll,\u201d \u201cView Polls,\u201d \u201cSign Up,\u201d and \u201cMake a Donation\u201d",
+        "However, it does not explain any process such as how to access poll materials, how releases are produced, or how users should interpret the data."
+      ],
+      "recommendation": "Add a short 3-step process section such as \u201cHow to use a CPI poll release: 1) Read the topline summary, 2) Review the questionnaire and crosstabs, 3) Cite the release date and methodology when referencing findings.\u201d"
+    }
+  },
+  "gaps": [
+    {
+      "id": "gap_comparison_tables",
+      "category": "comparison_tables",
+      "severity": "high",
+      "description": "Add a comparison table for recent polls with columns for poll name, geography, field dates, sample, top issues covered, and key findings so users and AI systems can compare releases directly.",
+      "pattern_score": 0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_recursive_depth",
+      "category": "recursive_depth",
+      "severity": "high",
+      "description": "For each featured poll, add a 3-layer content block: one-sentence summary, 3\u20135 key findings, and a \u201cMethodology & Downloads\u201d subsection to answer both initial and follow-up user questions on the same page.",
+      "pattern_score": 3.5,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_faq_injection",
+      "category": "faq_injection",
+      "severity": "high",
+      "description": "Add a concise FAQ below \u201cLatest Poll Releases\u201d answering real user questions like \u201cWhat is included in each poll release?\u201d, \u201cHow often does CPI publish polls?\u201d, and \u201cWhere can I download crosstabs and questionnaires?\u201d",
+      "pattern_score": 0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_structured_data",
+      "category": "structured_data",
+      "severity": "medium",
+      "description": "Convert the poll release listings into a repeatable structured card or table format with fixed fields\u2014release date, geography, issues, summary, and download links\u2014to make extraction cleaner for AI systems.",
+      "pattern_score": 11,
+      "pattern_max": 20,
+      "weight": 20
+    },
+    {
+      "id": "gap_procedural_clarity",
+      "category": "procedural_clarity",
+      "severity": "medium",
+      "description": "Add a short 3-step process section such as \u201cHow to use a CPI poll release: 1) Read the topline summary, 2) Review the questionnaire and crosstabs, 3) Cite the release date and methodology when referencing findings.\u201d",
+      "pattern_score": 1,
+      "pattern_max": 5,
+      "weight": 5
+    },
+    {
+      "id": "gap_citation_hooks",
+      "category": "citation_hooks",
+      "severity": "low",
+      "description": "Add a short methodology-and-sources block under each poll release with sample size, field dates, mode, margin of error, and direct links labeled \u201cQuestionnaire,\u201d \u201cCrosstabs,\u201d and \u201cMethodology PDF\u201d so AI engines can cite verifiable evidence rather than only promotional summaries.",
+      "pattern_score": 4.5,
+      "pattern_max": 10,
+      "weight": 10
+    },
+    {
+      "id": "gap_definitional_precision",
+      "category": "definitional_precision",
+      "severity": "low",
+      "description": "Add a \u201cHow to Read Our Polls\u201d section that defines key terms used on the page\u2014especially \u201cstatewide poll,\u201d \u201ccrosstabs,\u201d \u201cpress release,\u201d and \u201cnonpartisan\u201d\u2014in one-sentence, quote-ready definitions.",
+      "pattern_score": 3,
+      "pattern_max": 10,
+      "weight": 10
+    }
+  ],
+  "anti_pattern_penalties": 8
+}

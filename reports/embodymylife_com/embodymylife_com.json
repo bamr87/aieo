@@ -1,0 +1,208 @@
+{
+  "url": "https://www.embodymylife.com/",
+  "timestamp": "2026-03-30T22:01:56.837129",
+  "status": "success",
+  "score": 11.600000000000001,
+  "grade": "F",
+  "word_count": 1760,
+  "scoring_method": "ai",
+  "content_type": "landing_page",
+  "overall_assessment": "This is a persuasive wellness service landing page with strong emotional positioning, clear service categories, and credible personal-brand signals. However, AI engines will struggle to cite it because the page lacks explicit definitions, FAQ-style answers, comparison structure, and source-backed claims; much of the copy is inspirational rather than extractable.",
+  "pattern_scores": {
+    "meta_context": {
+      "score": 7.0,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page explains why the offering matters emotionally: \"So many women feel unseen, unheard, and isolated. We need COMMUNITY more than ever\".",
+        "Audience context is present in \"She works with women, men, and teenage girls, specializing in midlife issues, addiction/eating disorder recovery, anxiety/depression, relationship challenges, life transitions\".",
+        "The broader value proposition is framed in outcomes like \"sustainable healing from the inside out\" and \"reclaim the deep, embodied wisdom of your true self\"."
+      ],
+      "recommendation": "Strengthen the practical context by adding a section titled \"Who this is for and when to seek support\" that connects each offering to specific life situations and expected outcomes."
+    },
+    "citation_hooks": {
+      "score": 2.0,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page includes credibility signals such as \"with Alison Rothman MA, CYT, Emotional Doula\" and \"Alison Rothman has nearly 30 years of study and experiences in somatic healing arts and therapy\".",
+        "There are testimonials with initials such as \"-L.K.\", \"- T.H.\", and \"~J.M.\", which function as social proof but not verifiable citations.",
+        "No phrases like \"according to\", no named studies, no journal references, and no sources section are present."
+      ],
+      "recommendation": "Add a short evidence section under the coaching overview that cites 3-5 authoritative sources on somatic therapy, nervous system regulation, trauma-informed care, and yoga-based interventions, with named institutions and outbound links."
+    },
+    "comparison_tables": {
+      "score": 1.0,
+      "max": 15,
+      "detected": false,
+      "evidence": [
+        "The page presents multiple offerings \u2014 \"1:1 Holistic Coaching\", \"Community Dances\", and \"Retreats\" \u2014 but does not compare them side by side.",
+        "There are no tables and no structured pros/cons or \"which option is right for you\" section."
+      ],
+      "recommendation": "Add a simple comparison table showing Coaching vs Community Dances vs Retreats across audience, format, duration, goals, location, and best fit so AI engines can extract service distinctions directly."
+    },
+    "definitional_precision": {
+      "score": 4.0,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page partially defines an offering: \"Body-Centered Holistic Coaching is a unique, effective, and empowering alternative to traditional therapy\".",
+        "Another partial definition appears in \"Embody & Rise: Dancing in Community is a guided, free-form dance and embodiment experience\".",
+        "Key terms such as \"somatic healing arts\", \"authentic embodiment\", \"Emotional Doula\", and \"6 Pulses practice\" are mentioned without clear definitions."
+      ],
+      "recommendation": "Create a short \"What these terms mean\" section that explicitly defines Body-Centered Holistic Coaching, somatic healing, embodiment, Emotional Doula, and the 6 Pulses practice in one or two sentences each."
+    },
+    "recursive_depth": {
+      "score": 4.0,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "The page gives a top-level overview of several offerings and includes testimonials, which adds some depth beyond a headline-only landing page.",
+        "It anticipates one emotional follow-up concern with \"We are not meant to heal alone... You do not need to walk this path alone.\"",
+        "However, it does not answer practical follow-up questions such as duration, pricing, contraindications, virtual vs in-person availability, or what a session includes."
+      ],
+      "recommendation": "Layer the page from overview to specifics by adding expandable sections or subsections for each service covering who it is for, what happens, expected outcomes, logistics, and common concerns."
+    },
+    "faq_injection": {
+      "score": 0,
+      "max": 15,
+      "detected": false,
+      "evidence": [
+        "There is no FAQ section on the page.",
+        "Headers are promotional rather than question-based, such as \"Awaken to Your True Self\", \"1:1 Holistic Coaching\", and \"Let\u2019s Talk\".",
+        "Likely user questions about cost, session format, who coaching is for, retreat logistics, and how this differs from therapy are not answered in Q&A form."
+      ],
+      "recommendation": "Add a dedicated FAQ section with 6-8 real client questions, including \"What is body-centered holistic coaching?\", \"How is this different from therapy?\", \"Who is this for?\", \"Do you work virtually?\", and \"What happens on a clarity call?\"."
+    },
+    "temporal_anchoring": {
+      "score": 2.0,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page uses vague seasonal timing: \"Colorado (Summer)\" and \"the Baja of Mexico (Fall & Winter)\".",
+        "\"New Book by Alison Rothman Coming Soon!\" is a freshness signal but lacks a date.",
+        "The only explicit year is in the footer: \"\u00a92023\", which is boilerplate rather than meaningful content dating."
+      ],
+      "recommendation": "Add explicit dates and freshness markers such as \"Updated March 2026,\" retreat season dates, current availability, and a publication target for the upcoming book."
+    },
+    "entity_density": {
+      "score": 8.0,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "Named person and credentials: \"Alison Rothman, MA CYT\".",
+        "Specific locations: \"Colorado (Summer)\" and \"the Baja of Mexico (Fall & Winter)\".",
+        "Business and address details: \"Embody Life, LLC\", \"5353 Manhattan Circle, Suite 103. Boulder, CO\", and phone number \"303-443-3972\".",
+        "Service entities are present but many are generic wellness terms rather than highly specific, externally verifiable entities."
+      ],
+      "recommendation": "Increase specificity by naming retreat venues or regions, listing certifications in full, and adding concrete program entities such as session length, delivery format, and named methodologies used in coaching."
+    },
+    "structured_data": {
+      "score": 8.0,
+      "max": 20,
+      "detected": true,
+      "evidence": [
+        "The page has many headers, including \"Awaken to Your True Self\", \"1:1 Holistic Coaching\", \"Community Dances\", \"Retreats\", and \"Meet Alison Rothman, MA CYT\".",
+        "There are 3 unordered lists, including a benefits list under \"Through my Unique Holistic Approach... you will gain:\".",
+        "There are no tables, and many headers are empty: multiple entries shown as \"## \" indicate weak structural implementation.",
+        "The extracted text includes repeated navigation and duplicated \"Join the Community\" blocks, which reduces structural clarity."
+      ],
+      "recommendation": "Clean the heading structure by removing empty H2s, consolidating duplicate sections, and adding one table plus clearly labeled subsections for services, outcomes, logistics, and FAQs."
+    },
+    "procedural_clarity": {
+      "score": 1.0,
+      "max": 5,
+      "detected": true,
+      "evidence": [
+        "There is a call to action process implied by \"Book a Free Clarity Call\" but no explanation of what happens next.",
+        "The newsletter signup explains the outcome \u2014 \"receive a FREE Guide\" and \"You\u2019re now on the list\" \u2014 but not a step-by-step process.",
+        "No numbered steps or clear service process is provided for coaching, retreats, or events."
+      ],
+      "recommendation": "Add a 3-step process block such as \"1. Book a free clarity call, 2. Discuss goals and fit, 3. Begin coaching or choose a retreat/circle\" with expected timing and outcomes."
+    }
+  },
+  "gaps": [
+    {
+      "id": "gap_comparison_tables",
+      "category": "comparison_tables",
+      "severity": "high",
+      "description": "Add a simple comparison table showing Coaching vs Community Dances vs Retreats across audience, format, duration, goals, location, and best fit so AI engines can extract service distinctions directly.",
+      "pattern_score": 1.0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_recursive_depth",
+      "category": "recursive_depth",
+      "severity": "high",
+      "description": "Layer the page from overview to specifics by adding expandable sections or subsections for each service covering who it is for, what happens, expected outcomes, logistics, and common concerns.",
+      "pattern_score": 4.0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_faq_injection",
+      "category": "faq_injection",
+      "severity": "high",
+      "description": "Add a dedicated FAQ section with 6-8 real client questions, including \"What is body-centered holistic coaching?\", \"How is this different from therapy?\", \"Who is this for?\", \"Do you work virtually?\", and \"What happens on a clarity call?\".",
+      "pattern_score": 0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_structured_data",
+      "category": "structured_data",
+      "severity": "medium",
+      "description": "Clean the heading structure by removing empty H2s, consolidating duplicate sections, and adding one table plus clearly labeled subsections for services, outcomes, logistics, and FAQs.",
+      "pattern_score": 8.0,
+      "pattern_max": 20,
+      "weight": 20
+    },
+    {
+      "id": "gap_entity_density",
+      "category": "entity_density",
+      "severity": "medium",
+      "description": "Increase specificity by naming retreat venues or regions, listing certifications in full, and adding concrete program entities such as session length, delivery format, and named methodologies used in coaching.",
+      "pattern_score": 8.0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_citation_hooks",
+      "category": "citation_hooks",
+      "severity": "medium",
+      "description": "Add a short evidence section under the coaching overview that cites 3-5 authoritative sources on somatic therapy, nervous system regulation, trauma-informed care, and yoga-based interventions, with named institutions and outbound links.",
+      "pattern_score": 2.0,
+      "pattern_max": 10,
+      "weight": 10
+    },
+    {
+      "id": "gap_temporal_anchoring",
+      "category": "temporal_anchoring",
+      "severity": "medium",
+      "description": "Add explicit dates and freshness markers such as \"Updated March 2026,\" retreat season dates, current availability, and a publication target for the upcoming book.",
+      "pattern_score": 2.0,
+      "pattern_max": 10,
+      "weight": 10
+    },
+    {
+      "id": "gap_procedural_clarity",
+      "category": "procedural_clarity",
+      "severity": "medium",
+      "description": "Add a 3-step process block such as \"1. Book a free clarity call, 2. Discuss goals and fit, 3. Begin coaching or choose a retreat/circle\" with expected timing and outcomes.",
+      "pattern_score": 1.0,
+      "pattern_max": 5,
+      "weight": 5
+    },
+    {
+      "id": "gap_definitional_precision",
+      "category": "definitional_precision",
+      "severity": "low",
+      "description": "Create a short \"What these terms mean\" section that explicitly defines Body-Centered Holistic Coaching, somatic healing, embodiment, Emotional Doula, and the 6 Pulses practice in one or two sentences each.",
+      "pattern_score": 4.0,
+      "pattern_max": 10,
+      "weight": 10
+    }
+  ],
+  "anti_pattern_penalties": 18
+}

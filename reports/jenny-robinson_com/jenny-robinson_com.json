@@ -1,0 +1,196 @@
+{
+  "url": "https://www.jenny-robinson.com/",
+  "timestamp": "2026-03-30T22:06:10.794823",
+  "status": "success",
+  "score": 18.4,
+  "grade": "F",
+  "word_count": 633,
+  "scoring_method": "ai",
+  "content_type": "landing_page",
+  "overall_assessment": "This page has strong entity richness and a compelling personal narrative, which gives AI engines concrete names, places, productions, and book details to work with. However, it is weakly structured for citation: there are almost no lists, no FAQ content, no explicit definitions, and very little temporal or source-based context, making it harder for AI systems to extract precise answers confidently.",
+  "pattern_scores": {
+    "meta_context": {
+      "score": 6.0,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page explains emotional significance: \"wrote a children\u2019s book Are You Here? in honor of her late mother.\"",
+        "It frames the book's purpose: \"offering hope and comfort in the form of magical moments that remind us we are never truly alone.\"",
+        "It identifies a likely audience: \"this timeless story invites children and families to believe in the invisible threads of love\"."
+      ],
+      "recommendation": "Add a concise audience-and-purpose block stating who the book is for, when it is most helpful, and why families, educators, or grief counselors might use it."
+    },
+    "citation_hooks": {
+      "score": 2.0,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page includes external purchase/platform references: \"Available on Barnes & Noble , Amazon , and Bookshop.org\".",
+        "It names a credentialing institution: \"She has a certificate from ECornell University in Whole Foods Plant Based Nutrition\".",
+        "It references media/film entities such as \"Disney, the Orlando Magic, Sea World\" and titles including \"Criminal Minds\" and \"Iron Man 2\"."
+      ],
+      "recommendation": "Add a short verified-credentials and press section with source-backed links, such as \"Featured in [publication] on [date]\" and \"Credentials: ECornell certificate, yoga certification, IMDb profile,\" so AI engines can trace claims to authoritative sources."
+    },
+    "comparison_tables": {
+      "score": 0,
+      "max": 15,
+      "detected": false,
+      "evidence": [
+        "No tables are present.",
+        "The page is an about/author page and does not attempt any side-by-side comparison of books, formats, credentials, or media appearances."
+      ],
+      "recommendation": "Add a simple structured table for \"Jenny Robinson Clark at a glance\" with columns like Category, Details, and Relevance, or a book-format comparison table for where readers can buy \"Are You Here?\"."
+    },
+    "definitional_precision": {
+      "score": 2.5,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The book is described with some clarity: \"A story about the magical signs all around us\".",
+        "The page identifies Jenny's roles in the opening line: \"Performer, Author, and Storyteller\".",
+        "The grief theme is explained in context: \"author Jenny Robinson Clark tenderly explores the journey of grief through the eyes of a child\"."
+      ],
+      "recommendation": "Add explicit definition-style sentences near the book section, such as \"Are You Here? is a children's picture book about grief, remembrance, and emotional healing for families navigating loss.\""
+    },
+    "recursive_depth": {
+      "score": 3.0,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "The page gives a top-level biography and then a separate book description, creating limited overview-to-detail progression.",
+        "The book synopsis answers an implied follow-up about theme by explaining grief, signs, and comfort: \"When a little girl experiences the passing of her mother... magical signs begin to appear.\"",
+        "It does not address deeper follow-ups such as age range, reading level, inspiration, illustrator role, or how the book supports grieving families."
+      ],
+      "recommendation": "Expand the book area into layered sections: overview, themes, intended age range, inspiration, illustrator details, and common reader questions to capture multi-turn AI queries."
+    },
+    "faq_injection": {
+      "score": 1.5,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "There is one question-style header: \"Are You Here?\"",
+        "The header \"## Are You Here?\" functions more as a title than a user question, and there is no dedicated FAQ section.",
+        "The page does not include direct Q&A pairs such as audience, age range, themes, or where to buy."
+      ],
+      "recommendation": "Add a 4-6 item FAQ section answering likely reader queries: \"What is Are You Here?\", \"What age group is it for?\", \"What themes does it cover?\", and \"Where can I buy it?\""
+    },
+    "temporal_anchoring": {
+      "score": 1.0,
+      "max": 10,
+      "detected": false,
+      "evidence": [
+        "The only visible year is the footer: \"\u00a9 2026 All Rights Reserved.\"",
+        "The biography uses vague timing such as \"at an early age,\" \"when she was 4 years old,\" and \"moved to Los Angeles\" without publication or update dates.",
+        "There is no \"last updated\" date, book publication date, or current-status marker for the author's work."
+      ],
+      "recommendation": "Add meaningful dates such as \"Book published in [month year],\" \"Biography updated [month year],\" and \"As of [year], Jenny lives in Nashville, Tennessee and publishes under Jenny Robinson Clark.\""
+    },
+    "entity_density": {
+      "score": 13.5,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "Named people include \"Jenny Robinson Clark,\" \"Travis Clark,\" \"Mother Teresa,\" \"Henry David Thoreau,\" and \"Elisabetta Fantone.\"",
+        "Named organizations and places include \"Orlando, Florida,\" \"Disney,\" \"the Orlando Magic,\" \"Sea World,\" \"UCF,\" \"Los Angeles,\" and \"Nashville, TN.\"",
+        "Named productions and platforms include \"Bring It On: In It To Win It,\" \"Sydney White,\" \"Criminal Minds,\" \"Two and a Half Men,\" \"The Mentalist,\" \"Glee,\" \"Iron Man 2,\" \"Burlesque,\" \"Fired Up,\" \"Ted 2,\" \"Barnes & Noble,\" \"Amazon,\" and \"Bookshop.org.\""
+      ],
+      "recommendation": "Preserve the strong entity richness, but separate biography, credits, credentials, and book details into labeled sections so AI systems can extract each entity cluster with less noise from navigation text."
+    },
+    "structured_data": {
+      "score": 5.5,
+      "max": 20,
+      "detected": true,
+      "evidence": [
+        "The page has a header hierarchy: \"# ABOUT\", \"## Are You Here?\", \"### Jenny\u2019s favorite inspirational quotes:\", \"### AS SEEN IN\", and \"#### A story about the magical signs all around us\".",
+        "There are no tables.",
+        "There are no bullet or numbered lists despite multiple extractable items such as acting credits, credentials, retailers, and themes."
+      ],
+      "recommendation": "Convert dense prose into scannable structures: a bulleted career highlights list, a credentials list, a retailer list, and a compact book-details block with age range, themes, illustrator, and purchase options."
+    },
+    "procedural_clarity": {
+      "score": 0.5,
+      "max": 5,
+      "detected": false,
+      "evidence": [
+        "The only action-oriented instruction is \"Get a copy of Jenny Robinson Clark\u2019s debut children\u2019s book Are You Here? Available on Barnes & Noble , Amazon , and Bookshop.org\".",
+        "There are no steps, process descriptions, or ordered guidance for readers, buyers, or media contacts."
+      ],
+      "recommendation": "Add a short action sequence such as \"How to order the book\" or \"How to connect with Jenny\" using 3 clear steps and destination links."
+    }
+  },
+  "gaps": [
+    {
+      "id": "gap_structured_data",
+      "category": "structured_data",
+      "severity": "high",
+      "description": "Convert dense prose into scannable structures: a bulleted career highlights list, a credentials list, a retailer list, and a compact book-details block with age range, themes, illustrator, and purchase options.",
+      "pattern_score": 5.5,
+      "pattern_max": 20,
+      "weight": 20
+    },
+    {
+      "id": "gap_comparison_tables",
+      "category": "comparison_tables",
+      "severity": "high",
+      "description": "Add a simple structured table for \"Jenny Robinson Clark at a glance\" with columns like Category, Details, and Relevance, or a book-format comparison table for where readers can buy \"Are You Here?\".",
+      "pattern_score": 0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_recursive_depth",
+      "category": "recursive_depth",
+      "severity": "high",
+      "description": "Expand the book area into layered sections: overview, themes, intended age range, inspiration, illustrator details, and common reader questions to capture multi-turn AI queries.",
+      "pattern_score": 3.0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_faq_injection",
+      "category": "faq_injection",
+      "severity": "high",
+      "description": "Add a 4-6 item FAQ section answering likely reader queries: \"What is Are You Here?\", \"What age group is it for?\", \"What themes does it cover?\", and \"Where can I buy it?\"",
+      "pattern_score": 1.5,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_citation_hooks",
+      "category": "citation_hooks",
+      "severity": "medium",
+      "description": "Add a short verified-credentials and press section with source-backed links, such as \"Featured in [publication] on [date]\" and \"Credentials: ECornell certificate, yoga certification, IMDb profile,\" so AI engines can trace claims to authoritative sources.",
+      "pattern_score": 2.0,
+      "pattern_max": 10,
+      "weight": 10
+    },
+    {
+      "id": "gap_definitional_precision",
+      "category": "definitional_precision",
+      "severity": "medium",
+      "description": "Add explicit definition-style sentences near the book section, such as \"Are You Here? is a children's picture book about grief, remembrance, and emotional healing for families navigating loss.\"",
+      "pattern_score": 2.5,
+      "pattern_max": 10,
+      "weight": 10
+    },
+    {
+      "id": "gap_temporal_anchoring",
+      "category": "temporal_anchoring",
+      "severity": "medium",
+      "description": "Add meaningful dates such as \"Book published in [month year],\" \"Biography updated [month year],\" and \"As of [year], Jenny lives in Nashville, Tennessee and publishes under Jenny Robinson Clark.\"",
+      "pattern_score": 1.0,
+      "pattern_max": 10,
+      "weight": 10
+    },
+    {
+      "id": "gap_procedural_clarity",
+      "category": "procedural_clarity",
+      "severity": "medium",
+      "description": "Add a short action sequence such as \"How to order the book\" or \"How to connect with Jenny\" using 3 clear steps and destination links.",
+      "pattern_score": 0.5,
+      "pattern_max": 5,
+      "weight": 5
+    }
+  ],
+  "anti_pattern_penalties": 10
+}

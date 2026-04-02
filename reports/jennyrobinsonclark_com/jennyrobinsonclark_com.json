@@ -1,0 +1,196 @@
+{
+  "url": "https://www.jennyrobinsonclark.com/",
+  "timestamp": "2026-03-30T22:07:12.010045",
+  "status": "success",
+  "score": 17.6,
+  "grade": "F",
+  "word_count": 1490,
+  "scoring_method": "ai",
+  "content_type": "product_page",
+  "overall_assessment": "This page has strong emotional positioning, rich named entities, and credible social proof, which gives it some citation potential for queries about the book and its creators. However, AI engines will struggle to extract precise, reusable answers because the page lacks FAQ structure, scannable lists, factual book metadata, and a clean information hierarchy.",
+  "pattern_scores": {
+    "meta_context": {
+      "score": 7.0,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page clearly frames the emotional significance: \u201cJenny hopes, after you read this book, you are left with a spark of belief, a flash of hope, and an enlightened peace.\u201d",
+        "It identifies the audience context through review language such as \u201cThis would be a special gift for a child and a friend/family member who has lost someone.\u201d",
+        "The reviews and book description connect the book to grief, healing, and remembrance, giving the page a clear \u201cwhy this matters\u201d dimension."
+      ],
+      "recommendation": "Strengthen the top-of-page value proposition with one explicit audience statement, such as who the book is for, when it is most helpful, and why it may support conversations about grief."
+    },
+    "citation_hooks": {
+      "score": 3.0,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page includes attributed endorsements such as \u201c\u2014 Nicole Sciacca, Bestselling author of YOLKED\u201d and \u201c\u2014 Laura Lynne Jackson, NY Times Bestselling author of Signs, Guided, & The Light Between Us.\u201d",
+        "It references review platforms by name: \u201cGoodreads, Barnes & Noble, Amazon, Books-A-Million, and Bookshop.org.\u201d",
+        "Most core claims about the book\u2019s impact and meaning are presented without external evidence or source-backed support."
+      ],
+      "recommendation": "Add a short \u201cPress, Reviews, and Sources\u201d block that links directly to named review pages, podcast appearances, retailer listings, and any media coverage so AI engines can verify the book\u2019s reception and publication footprint."
+    },
+    "comparison_tables": {
+      "score": 0,
+      "max": 15,
+      "detected": false,
+      "evidence": [
+        "There are no tables on the page.",
+        "The content does not compare formats, retailers, age suitability, or similar grief-support books in a structured way."
+      ],
+      "recommendation": "Add a simple comparison table showing where to buy the book (Amazon US/Canada/UK/Australia, Barnes & Noble, Bookshop.org, Books-A-Million, TalkShopLive) plus format availability, region, and purchase type."
+    },
+    "definitional_precision": {
+      "score": 2.5,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page gives a loose description of the book: \u201cA beautiful and bright little girl who loves nature and the outdoors is unsure if her mom is still with her.\u201d",
+        "It implies what the book is about, but does not explicitly define key concepts such as the target age range, genre, or what \u201cmagical signs\u201d means in the context of grief support.",
+        "The phrase \u201cA Story about the Magical Signs All Around Us\u201d functions as a thematic label rather than a precise definition."
+      ],
+      "recommendation": "Add a concise definition block near the top that explicitly states the book\u2019s genre, intended audience, themes, and format, for example: \u201cAre You Here? is a children\u2019s picture book about grief, remembrance, and finding comfort in nature-based signs after loss.\u201d"
+    },
+    "recursive_depth": {
+      "score": 5.0,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "The page covers multiple layers of the project: book premise, author background, illustrator background, original song, events, podcasts, and reviews.",
+        "It partially addresses follow-up curiosity by expanding from the book into \u201cOriginal Song,\u201d \u201cFun Events,\u201d and \u201cPodcasts + Performances.\u201d",
+        "However, it does not answer likely next-step questions such as age range, reading level, grief suitability, trigger sensitivity, format details, or how the song relates to the book."
+      ],
+      "recommendation": "Build depth by adding follow-up sections that answer practical reader questions: age range, themes, how parents can introduce the book, what signs appear in the story, and where to find companion media."
+    },
+    "faq_injection": {
+      "score": 3.0,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "The title phrase \u201cAre You Here?\u201d is a question, but it is the book title rather than a functional FAQ.",
+        "The opening asks \u201cAre our loved ones still with us after they are gone?\u201d but the page does not structure the answer as a reusable Q&A.",
+        "The footer mentions \u201cFAQs,\u201d but no FAQ content is included in the provided page text."
+      ],
+      "recommendation": "Add a dedicated FAQ section with 5\u20137 real buyer and reader questions such as \u201cWhat age is this book for?\u201d, \u201cIs this book appropriate after the loss of a parent?\u201d, and \u201cWhere can I buy Are You Here?\u201d with direct answers."
+    },
+    "temporal_anchoring": {
+      "score": 4.5,
+      "max": 10,
+      "detected": true,
+      "evidence": [
+        "The page includes a meaningful event date: \u201cIn March of 2025, almost 200 of our closest friends gathered together at Oh Hey Cafe in Orlando Florida.\u201d",
+        "It includes a copyright range \u201c\u00a9 2024-2026 Jenny Robinson Clark,\u201d but that is weaker as a freshness signal than a visible update date.",
+        "There is no explicit publication date, release date, or \u201clast updated\u201d marker for the page itself."
+      ],
+      "recommendation": "Add a visible freshness line near the top or bottom such as \u201cBook page updated March 2026\u201d and include the book\u2019s publication/release date to help AI systems assess current relevance."
+    },
+    "entity_density": {
+      "score": 12.5,
+      "max": 15,
+      "detected": true,
+      "evidence": [
+        "Named people include \u201cJenny Robinson Clark,\u201d \u201cElisabetta Fantone Cohen,\u201d \u201cTravis Clark,\u201d \u201cNicole Sciacca,\u201d \u201cLaura Lynne Jackson,\u201d and \u201cDr. Shainna.\u201d",
+        "Named organizations and platforms include \u201cAmazon,\u201d \u201cBarnes & Noble,\u201d \u201cBooks-A-Million,\u201d \u201cBookshop.org,\u201d \u201cTalkShopLive,\u201d \u201cGoodreads,\u201d \u201cYouTube,\u201d \u201cSpotify,\u201d and \u201cApple Music.\u201d",
+        "Specific places and dates appear in \u201cIn March of 2025... at Oh Hey Cafe in Orlando Florida\u201d and \u201cSparkle of Hope Gala hosted by Together At Peace in Chicago, Illinois.\u201d"
+      ],
+      "recommendation": "Increase entity usefulness by adding publication-specific facts such as release date, ISBN, page count, format, age range, and publisher/imprint so the named entities become more citable and reference-ready."
+    },
+    "structured_data": {
+      "score": 6.5,
+      "max": 20,
+      "detected": true,
+      "evidence": [
+        "The page has multiple headers including \u201cAbout the Author,\u201d \u201cAbout the Illustrator,\u201d \u201cAbout the Book Are You Here?,\u201d \u201cOriginal Song,\u201d and \u201cFun Events.\u201d",
+        "There are no tables and no lists, despite the page containing information that could be structured into scannable formats.",
+        "The header structure appears noisy and duplicative, including repeated \u201c# Are You Here?\u201d and \u201c## A Story about the Magical Signs All Around Us.\u201d"
+      ],
+      "recommendation": "Convert key information into structured blocks: a quick facts list for the book, a retailer list, an FAQ list, and a cleaner header hierarchy with one H1 and distinct H2 sections."
+    },
+    "procedural_clarity": {
+      "score": 0.5,
+      "max": 5,
+      "detected": false,
+      "evidence": [
+        "The page includes calls to action like \u201cGet Your Copy\u201d and newsletter signup fields, but no step-by-step guidance.",
+        "There is no clear process for how to buy, how to use the book with a child, or how to access the song and related resources."
+      ],
+      "recommendation": "Add a short 3-step section such as \u201cHow to use this book with a grieving child\u201d or \u201cHow to order and listen to the companion song\u201d to capture procedural queries AI engines often surface."
+    }
+  },
+  "gaps": [
+    {
+      "id": "gap_comparison_tables",
+      "category": "comparison_tables",
+      "severity": "high",
+      "description": "Add a simple comparison table showing where to buy the book (Amazon US/Canada/UK/Australia, Barnes & Noble, Bookshop.org, Books-A-Million, TalkShopLive) plus format availability, region, and purchase type.",
+      "pattern_score": 0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_faq_injection",
+      "category": "faq_injection",
+      "severity": "high",
+      "description": "Add a dedicated FAQ section with 5\u20137 real buyer and reader questions such as \u201cWhat age is this book for?\u201d, \u201cIs this book appropriate after the loss of a parent?\u201d, and \u201cWhere can I buy Are You Here?\u201d with direct answers.",
+      "pattern_score": 3.0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_structured_data",
+      "category": "structured_data",
+      "severity": "medium",
+      "description": "Convert key information into structured blocks: a quick facts list for the book, a retailer list, an FAQ list, and a cleaner header hierarchy with one H1 and distinct H2 sections.",
+      "pattern_score": 6.5,
+      "pattern_max": 20,
+      "weight": 20
+    },
+    {
+      "id": "gap_recursive_depth",
+      "category": "recursive_depth",
+      "severity": "medium",
+      "description": "Build depth by adding follow-up sections that answer practical reader questions: age range, themes, how parents can introduce the book, what signs appear in the story, and where to find companion media.",
+      "pattern_score": 5.0,
+      "pattern_max": 15,
+      "weight": 15
+    },
+    {
+      "id": "gap_definitional_precision",
+      "category": "definitional_precision",
+      "severity": "medium",
+      "description": "Add a concise definition block near the top that explicitly states the book\u2019s genre, intended audience, themes, and format, for example: \u201cAre You Here? is a children\u2019s picture book about grief, remembrance, and finding comfort in nature-based signs after loss.\u201d",
+      "pattern_score": 2.5,
+      "pattern_max": 10,
+      "weight": 10
+    },
+    {
+      "id": "gap_procedural_clarity",
+      "category": "procedural_clarity",
+      "severity": "medium",
+      "description": "Add a short 3-step section such as \u201cHow to use this book with a grieving child\u201d or \u201cHow to order and listen to the companion song\u201d to capture procedural queries AI engines often surface.",
+      "pattern_score": 0.5,
+      "pattern_max": 5,
+      "weight": 5
+    },
+    {
+      "id": "gap_citation_hooks",
+      "category": "citation_hooks",
+      "severity": "low",
+      "description": "Add a short \u201cPress, Reviews, and Sources\u201d block that links directly to named review pages, podcast appearances, retailer listings, and any media coverage so AI engines can verify the book\u2019s reception and publication footprint.",
+      "pattern_score": 3.0,
+      "pattern_max": 10,
+      "weight": 10
+    },
+    {
+      "id": "gap_temporal_anchoring",
+      "category": "temporal_anchoring",
+      "severity": "low",
+      "description": "Add a visible freshness line near the top or bottom such as \u201cBook page updated March 2026\u201d and include the book\u2019s publication/release date to help AI systems assess current relevance.",
+      "pattern_score": 4.5,
+      "pattern_max": 10,
+      "weight": 10
+    }
+  ],
+  "anti_pattern_penalties": 18
+}

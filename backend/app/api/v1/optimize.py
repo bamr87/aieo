@@ -21,6 +21,8 @@ class OptimizeRequest(BaseModel):
     content: str
     target_engines: Optional[list[str]] = None
     style: str = "preserve"
+    content_mode: str = "enhance"
+    model: Optional[str] = None
 
 
 @router.post("/aieo/optimize")
@@ -43,6 +45,8 @@ async def optimize_content(
             content=request.content,
             target_engines=request.target_engines,
             style=request.style,
+            content_mode=request.content_mode,
+            model=request.model,
         )
         return result
     except ValueError as e:

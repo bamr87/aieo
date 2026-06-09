@@ -16,6 +16,9 @@ export function HomePage() {
           <Link to="/optimize" className="btn btn-secondary">
             Optimize Content
           </Link>
+          <Link to="/workspace" className="btn btn-secondary">
+            Open Workspace
+          </Link>
         </div>
       </div>
 
@@ -34,6 +37,11 @@ export function HomePage() {
           <h2>Track</h2>
           <p>Monitor citations across AI engines</p>
           <Link to="/dashboard">View Dashboard →</Link>
+        </div>
+        <div className="feature">
+          <h2>Content Lifecycle</h2>
+          <p>Research, write, rewrite, and publish from one workspace</p>
+          <Link to="/research">Open Workflow →</Link>
         </div>
       </div>
     </div>

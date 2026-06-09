@@ -38,6 +38,17 @@ except ImportError:
 
 from app.services.scoring_engine import ScoringEngine
 from app.services.prompt_loader import PromptLoader
+from app.services.agent_runner import AgentRunner
+from app.services.analyze_existing_service import AnalyzeExistingService
+from app.services.landing_service import LandingService
+from app.services.priorities_service import PrioritiesService
+from app.services.publish_service import PublishService
+from app.services.research_service import ResearchService
+from app.services.rewrite_service import RewriteService
+from app.services.scrub_service import ScrubService
+from app.services.workspace_service import WorkspaceService
+from app.services.write_service import WriteService
+from app.core.config import workspace_root
 
 
 def create_mcp_server():
@@ -48,6 +59,16 @@ def create_mcp_server():
     server = Server("aieo-scoring")
     engine = ScoringEngine()
     loader = PromptLoader()
+    research_service = ResearchService()
+    write_service = WriteService()
+    rewrite_service = RewriteService()
+    analyze_existing_service = AnalyzeExistingService()
+    scrub_service = ScrubService()
+    priorities_service = PrioritiesService()
+    landing_service = LandingService()
+    publish_service = PublishService()
+    agent_runner = AgentRunner()
+    workspace_service = WorkspaceService(workspace_root())
 
     @server.list_tools()
     async def list_tools():
@@ -121,10 +142,105 @@ def create_mcp_server():
                     "required": ["pattern_name"],
                 },
             ),
+            Tool(
+                name="aieo_research",
+                description="Create a research brief for a topic.",
+                inputSchema={"type": "object", "properties": {"topic": {"type": "string"}}, "required": ["topic"]},
+            ),
+            Tool(
+                name="aieo_write",
+                description="Write a long-form draft for a topic.",
+                inputSchema={"type": "object", "properties": {"topic": {"type": "string"}}, "required": ["topic"]},
+            ),
+            Tool(
+                name="aieo_rewrite",
+                description="Rewrite an existing workspace file.",
+                inputSchema={"type": "object", "properties": {"source_path": {"type": "string"}}, "required": ["source_path"]},
+            ),
+            Tool(
+                name="aieo_analyze_existing",
+                description="Analyze existing content URL or file.",
+                inputSchema={"type": "object", "properties": {"target": {"type": "string"}}, "required": ["target"]},
+            ),
+            Tool(
+                name="aieo_scrub",
+                description="Remove AI-style artifacts from content.",
+                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+            ),
+            Tool(
+                name="aieo_editor_review",
+                description="Run the editor agent on content.",
+                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+            ),
+            Tool(
+                name="aieo_headline_generate",
+                description="Run headline-generator agent for a topic.",
+                inputSchema={"type": "object", "properties": {"topic": {"type": "string"}}, "required": ["topic"]},
+            ),
+            Tool(
+                name="aieo_priorities",
+                description="Build content priority queue from performance signals.",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="aieo_landing_audit",
+                description="Audit landing page content for CRO quality.",
+                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+            ),
+            Tool(
+                name="aieo_readability",
+                description="Get readability dimension for content.",
+                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+            ),
+            Tool(
+                name="aieo_keyword_analysis",
+                description="Get keyword analysis for content.",
+                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+            ),
+            Tool(
+                name="aieo_search_intent",
+                description="Infer search intent from content/query.",
+                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+            ),
+            Tool(
+                name="aieo_publish_wordpress",
+                description="Publish a draft path to WordPress.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {"draft_path": {"type": "string"}, "title": {"type": "string"}},
+                    "required": ["draft_path", "title"],
+                },
+            ),
+            Tool(
+                name="aieo_workspace_list",
+                description="List workspace files and directories.",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="aieo_workspace_read",
+                description="Read one workspace file.",
+                inputSchema={"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]},
+            ),
+            Tool(
+                name="aieo_workspace_write",
+                description="Write one workspace file.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {"path": {"type": "string"}, "content": {"type": "string"}},
+                    "required": ["path", "content"],
+                },
+            ),
         ]
 
     @server.call_tool()
     async def call_tool(name: str, arguments: dict):
+        try:
+            return await _dispatch_tool(name, arguments)
+        except Exception as exc:
+            logger.exception("MCP tool %s failed", name)
+            return [TextContent(type="text", text=json.dumps({"error": str(exc), "tool": name}))]
+
+    async def _dispatch_tool(name: str, arguments: dict):
         if name == "aieo_score_content":
             content = arguments.get("content", "")
             fmt = arguments.get("format", "markdown")
@@ -185,6 +301,59 @@ def create_mcp_server():
                 return [TextContent(type="text", text=json.dumps(
                     {"error": f"Pattern '{pattern_name}' not found", "available": available}
                 ))]
+
+        elif name == "aieo_research":
+            result = await research_service.create_brief(arguments.get("topic", ""))
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        elif name == "aieo_write":
+            result = await write_service.write(arguments.get("topic", ""))
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        elif name == "aieo_rewrite":
+            result = await rewrite_service.rewrite(arguments.get("source_path", ""))
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        elif name == "aieo_analyze_existing":
+            result = await analyze_existing_service.analyze(arguments.get("target", ""))
+            return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
+        elif name == "aieo_scrub":
+            result = await scrub_service.scrub(arguments.get("content", ""))
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        elif name == "aieo_editor_review":
+            result = await agent_runner.run_agent("editor", arguments.get("content", ""))
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        elif name == "aieo_headline_generate":
+            topic = arguments.get("topic", "")
+            result = await agent_runner.run_agent("headline-generator", topic, extra_inputs={"topic": topic})
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        elif name == "aieo_priorities":
+            return [TextContent(type="text", text=json.dumps(priorities_service.build_priorities(), indent=2))]
+        elif name == "aieo_landing_audit":
+            return [TextContent(type="text", text=json.dumps(landing_service.audit(arguments.get("content", "")), indent=2))]
+        elif name == "aieo_readability":
+            result = engine.score(arguments.get("content", ""), format="markdown")
+            return [TextContent(type="text", text=json.dumps(result.get("readability", {}), indent=2))]
+        elif name == "aieo_keyword_analysis":
+            result = engine.score(arguments.get("content", ""), format="markdown")
+            return [TextContent(type="text", text=json.dumps(result.get("keyword_analysis", {}), indent=2))]
+        elif name == "aieo_search_intent":
+            result = engine.score(arguments.get("content", ""), format="markdown")
+            return [TextContent(type="text", text=json.dumps(result.get("search_intent", {}), indent=2))]
+        elif name == "aieo_publish_wordpress":
+            result = await publish_service.publish_wordpress(
+                draft_path=arguments.get("draft_path", ""),
+                title=arguments.get("title", ""),
+                metadata=arguments.get("metadata", {}),
+            )
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        elif name == "aieo_workspace_list":
+            workspace_service.initialize()
+            nodes = [node.__dict__ for node in workspace_service.list_tree()]
+            return [TextContent(type="text", text=json.dumps({"nodes": nodes}, indent=2))]
+        elif name == "aieo_workspace_read":
+            result = workspace_service.read_file(arguments.get("path", ""))
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        elif name == "aieo_workspace_write":
+            workspace_service.write_file(arguments.get("path", ""), arguments.get("content", ""))
+            return [TextContent(type="text", text=json.dumps({"ok": True}, indent=2))]
 
         return [TextContent(type="text", text=json.dumps({"error": f"Unknown tool: {name}"}))]
 

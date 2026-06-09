@@ -6,6 +6,7 @@ import './OptimizePage.css';
 export function OptimizePage() {
   const [content, setContent] = useState('');
   const [style, setStyle] = useState<'preserve' | 'aggressive'>('preserve');
+  const [contentMode, setContentMode] = useState<'enhance' | 'expand'>('enhance');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OptimizeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +26,7 @@ export function OptimizePage() {
       const response = await optimizeApi.optimize({
         content,
         style,
+        content_mode: contentMode,
       }) as OptimizeResult;
       setResult(response);
     } catch (err) {
@@ -76,6 +78,19 @@ export function OptimizePage() {
           >
             <option value="preserve">Preserve original style</option>
             <option value="aggressive">Aggressive optimization</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="contentMode">Content mode</label>
+          <select
+            id="contentMode"
+            value={contentMode}
+            onChange={(e) => setContentMode(e.target.value as 'enhance' | 'expand')}
+            disabled={loading}
+          >
+            <option value="enhance">Enhance existing content</option>
+            <option value="expand">Expand depth and structure</option>
           </select>
         </div>
 

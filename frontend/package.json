@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "echo \"No tests configured yet\" && exit 0",
+    "test": "node ./scripts/smoke.js",
     "preview": "vite preview"
   },
   "dependencies": {

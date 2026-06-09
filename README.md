@@ -6,6 +6,20 @@
 
 **AIEO** is an AI-native analysis engine that scores, reviews, and optimizes website content for citability by AI engines — ChatGPT, Claude, Grok, Gemini, Perplexity, and others. It replaces traditional SEO thinking with a prompt-engineered, agent-orchestrated workflow where AI models evaluate your content the same way they would when deciding whether to cite it.
 
+## Unified Content Platform (AIEO + SEO Machine capabilities)
+
+AIEO now includes a full content lifecycle layer in addition to classic audit/optimize:
+
+- Workspace management in `.aieo-workspace/` (`context/`, `topics/`, `research/`, `drafts/`, `rewrites/`, `published/`, `landing-pages/`)
+- Research and writing endpoints: `/aieo/research`, `/aieo/write`, `/aieo/rewrite`, `/aieo/analyze-existing`, `/aieo/scrub`
+- Specialized agents via `AgentRunner`: content-analyzer, seo-optimizer, meta-creator, internal-linker, keyword-mapper, editor, performance, headline-generator, cro-analyst, landing-page-optimizer
+- Multi-dimension scoring output (AIEO, SEO, Readability, Humanity, CRO) with analyzer modules under `backend/app/analyzers/`
+- Data connectors for GA4, GSC, and DataForSEO under `backend/app/integrations/`
+- WordPress publishing via `/aieo/publish/wordpress` and `backend/app/publishers/wordpress_publisher.py`
+- Expanded MCP tools (`aieo_research`, `aieo_write`, `aieo_rewrite`, `aieo_analyze_existing`, `aieo_scrub`, `aieo_priorities`, `aieo_landing_audit`, `aieo_workspace_*`, `aieo_publish_wordpress`)
+
+Frontend routes now expose the full workflow: `/workspace`, `/topics`, `/research`, `/drafts`, `/rewrites`, `/published`, `/landing-pages`, `/performance`, `/agents`.
+
 ---
 
 ## The Problem

@@ -20,6 +20,16 @@ from typing import Dict, List, Optional
 
 from .content_parser import ContentParser
 from .prompt_loader import PromptLoader
+from ..analyzers import (
+    ContentLengthComparator,
+    ContentScorer,
+    CROChecker,
+    KeywordAnalyzer,
+    LandingPageScorer,
+    ReadabilityScorer,
+    SearchIntentAnalyzer,
+    SEOQualityRater,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +55,14 @@ class ScoringEngine:
         self.api_key = api_key
         self.model = model
         self._resolve_config()
+        self.readability_scorer = ReadabilityScorer()
+        self.keyword_analyzer = KeywordAnalyzer()
+        self.intent_analyzer = SearchIntentAnalyzer()
+        self.length_comparator = ContentLengthComparator()
+        self.seo_rater = SEOQualityRater()
+        self.content_scorer = ContentScorer()
+        self.landing_scorer = LandingPageScorer()
+        self.cro_checker = CROChecker()
 
     def _resolve_config(self):
         """Resolve provider/key/model from environment if not explicitly set."""
@@ -258,6 +276,8 @@ class ScoringEngine:
 
         gaps = self._build_gaps(pattern_scores, pattern_weights)
 
+        enriched = self._compute_extra_dimensions(parsed)
+        enriched["dimensions"]["aieo"] = final_score
         return {
             "score": final_score,
             "grade": grade,
@@ -278,6 +298,7 @@ class ScoringEngine:
             "scoring_method": "ai",
             "model": self.model,
             "provider": self.provider,
+            **enriched,
         }
 
     # ------------------------------------------------------------------
@@ -374,6 +395,8 @@ class ScoringEngine:
         grade = self._score_to_grade(final_score)
         gaps = self._build_gaps(pattern_scores, pattern_weights)
 
+        enriched = self._compute_extra_dimensions(parsed)
+        enriched["dimensions"]["aieo"] = final_score
         return {
             "score": final_score,
             "grade": grade,
@@ -387,6 +410,38 @@ class ScoringEngine:
             "scoring_method": "heuristic",
             "model": None,
             "provider": None,
+            **enriched,
+        }
+
+    def _compute_extra_dimensions(self, parsed: Dict) -> Dict:
+        """Compute additional SEO and content quality dimensions."""
+        text = parsed.get("text", "")
+        readability = self.readability_scorer.score(text)
+        keyword_analysis = self.keyword_analyzer.analyze(text)
+        search_intent = self.intent_analyzer.analyze(text)
+        serp_comparison = self.length_comparator.compare(text)
+        seo_quality = self.seo_rater.rate(text)
+        humanity = self.content_scorer.score(text)
+        cro = {
+            "landing_page": self.landing_scorer.score(text),
+            "checklist": self.cro_checker.check(text),
+        }
+        dimensions = {
+            "aieo": None,  # populated by caller using main score
+            "seo": seo_quality.get("score", 0),
+            "readability": readability.get("score", 0),
+            "humanity": humanity.get("humanity", 0),
+            "cro": cro["landing_page"].get("score", 0),
+        }
+        return {
+            "seo_quality": seo_quality,
+            "readability": readability,
+            "search_intent": search_intent,
+            "keyword_analysis": keyword_analysis,
+            "serp_comparison": serp_comparison,
+            "humanity": humanity,
+            "cro": cro,
+            "dimensions": dimensions,
         }
 
 

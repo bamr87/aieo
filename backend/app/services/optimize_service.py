@@ -1,6 +1,7 @@
 """Optimization service for applying AIEO patterns."""
 
-from typing import Dict, List
+from pathlib import Path
+from typing import Dict, List, Optional
 from .scoring_engine import ScoringEngine
 from .ai_service import AIService
 from ..core.validation import validate_content_size, sanitize_content
@@ -9,15 +10,49 @@ from ..core.validation import validate_content_size, sanitize_content
 class OptimizeService:
     """Service for optimizing content."""
 
-    def __init__(self):
-        self.scoring_engine = ScoringEngine()
-        self.ai_service = AIService()
+    def __init__(
+        self,
+        scoring_engine: Optional[ScoringEngine] = None,
+        ai_service: Optional[AIService] = None,
+    ):
+        self.scoring_engine = scoring_engine or ScoringEngine()
+        self.ai_service = ai_service or AIService()
+
+    @classmethod
+    def for_provider(
+        cls,
+        provider: Optional[str] = None,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        prompts_dir: Optional[Path] = None,
+    ) -> "OptimizeService":
+        """Build service with explicit provider/key/model (CLI / CI)."""
+        engine = ScoringEngine(
+            prompts_dir=prompts_dir,
+            provider=provider,
+            api_key=api_key,
+            model=model,
+        )
+        openai_key = None
+        anthropic_key = None
+        if api_key:
+            if engine.provider == "anthropic":
+                anthropic_key = api_key
+            else:
+                openai_key = api_key
+        ai = AIService(
+            openai_api_key=openai_key,
+            anthropic_api_key=anthropic_key,
+        )
+        return cls(scoring_engine=engine, ai_service=ai)
 
     async def optimize(
         self,
         content: str,
         target_engines: List[str] = None,
         style: str = "preserve",
+        content_mode: str = "enhance",
+        model: Optional[str] = None,
     ) -> Dict:
         """
         Optimize content with AIEO patterns.
@@ -26,6 +61,8 @@ class OptimizeService:
             content: Original content
             target_engines: Target AI engines (optional)
             style: 'preserve' or 'aggressive'
+            content_mode: 'enhance' or 'expand'
+            model: Optional model override for the AI optimize call
 
         Returns:
             Optimization result with optimized content and changes
@@ -46,6 +83,8 @@ class OptimizeService:
             content=content,
             gaps=gaps,
             style=style,
+            model=model,
+            content_mode=content_mode,
         )
 
         # Score optimized content

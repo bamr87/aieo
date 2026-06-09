@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Workspace service and API (`/aieo/workspace/*`) with seeded context templates under `.aieo-workspace`
+- Content lifecycle endpoints (`/aieo/research`, `/aieo/write`, `/aieo/rewrite`, `/aieo/analyze-existing`, `/aieo/scrub`)
+- Landing and performance endpoints (`/aieo/landing/*`, `/aieo/priorities`, `/aieo/data/*`)
+- Integration layer for GA4, GSC, DataForSEO with filesystem cache
+- Publishing layer with WordPress adapter and `/aieo/publish/wordpress`
+- Agent prompt collections in `backend/prompts/agents/` and command prompts in `backend/prompts/commands/`
+- Analyzer package (`backend/app/analyzers`) and multi-dimension scoring in `ScoringEngine`
+- Frontend workflow routes/pages: workspace, topics, research, drafts, rewrites, published, landing, performance, agents
+- New MCP tools for lifecycle, workspace, analyzers, and publishing
+- New workflow metadata models and Alembic migration `002_workflow_metadata.py`
+- Backend tests for workspace, analyzers, lifecycle services, and data/publish services
+- Frontend smoke test script (`frontend/scripts/smoke.js`)
+
+### Changed
+- `tools.aieo_runner` now supports workflow commands (`research`, `write`, `rewrite`, `analyze`, `scrub`, `priorities`)
+- App version bumped to `0.3.0`
+
 ## [0.2.0] - 2026-03-28
 
 ### Added

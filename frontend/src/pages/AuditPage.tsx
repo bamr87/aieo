@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { auditApi } from '../services/api';
+import { agentsApi } from '../services/agentsApi';
+import { DimensionRadar } from '../components/DimensionRadar';
 import type { AuditResult, ApiError } from '../types';
 import './AuditPage.css';
 
@@ -8,6 +10,7 @@ export function AuditPage() {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AuditResult | null>(null);
+  const [agentOutput, setAgentOutput] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,6 +112,8 @@ export function AuditPage() {
             <div className="score-grade">Grade: {result.grade}</div>
           </div>
 
+          {result.dimensions && <DimensionRadar dimensions={result.dimensions} />}
+
           {result.gaps && result.gaps.length > 0 && (
             <div className="gaps-section">
               <h3>Gaps Found</h3>
@@ -116,9 +121,24 @@ export function AuditPage() {
                 {result.gaps.slice(0, 5).map((gap, index) => (
                   <li key={index}>
                     <strong>{gap.category}</strong> ({gap.severity}): {gap.description}
+                    <button
+                      style={{ marginLeft: 8 }}
+                      onClick={async () => {
+                        const out = await agentsApi.run('seo-optimizer', content, { gap });
+                        setAgentOutput(JSON.stringify(out, null, 2));
+                      }}
+                    >
+                      Apply fix
+                    </button>
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+          {agentOutput && (
+            <div className="gaps-section">
+              <h3>Agent Output</h3>
+              <pre>{agentOutput}</pre>
             </div>
           )}
         </div>

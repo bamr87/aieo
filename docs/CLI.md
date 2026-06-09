@@ -90,6 +90,40 @@ https://another-site.com/page                   21.5      F    1760     4
 - `gaps` — prioritized list of missing patterns with severity
 - `anti_pattern_penalties` — points deducted for anti-patterns
 
+### Headless markdown runner (CI / no database)
+
+Score or rewrite markdown files using the same `ScoringEngine` and `OptimizeService` as the API, without Postgres, Redis, or FastAPI.
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r backend/requirements-ci.txt
+export PYTHONPATH=backend
+# Audit only (heuristic if no API keys; AI scoring if keys are set)
+python -m tools.aieo_runner --root /path/to/site-repo --mode audit-only --output-dir ./aieo-artifacts
+# Enhance or expand (requires OPENAI_API_KEY or ANTHROPIC_API_KEY)
+python -m tools.aieo_runner --root /path/to/site-repo --mode enhance --write-proposed --output-dir ./aieo-artifacts
+```
+
+**Cost / latency:** each file runs at least one scoring pass; `enhance` / `expand` add an optimization call per file. Use `--max-files` and narrow `--glob` (or `--git-diff-base` with `--intersect-globs`) to cap API usage.
+
+**Environment:** the runner sets `AIEO_HEADLESS=1` so settings load from the process environment only (not `.env`), which keeps GitHub Actions and minimal installs predictable.
+
+See [.github/workflows/aieo-content.yml](.github/workflows/aieo-content.yml) for a reusable workflow and cross-repo checkout.
+
+### Workflow commands (research/write/rewrite/analyze/scrub/priorities)
+
+The headless runner now supports content-lifecycle commands:
+
+```bash
+export PYTHONPATH=backend
+python -m tools.aieo_runner research --workspace ./.aieo-workspace --topic "AI content strategy"
+python -m tools.aieo_runner write --workspace ./.aieo-workspace --topic "AI content strategy"
+python -m tools.aieo_runner rewrite --workspace ./.aieo-workspace --source-path drafts/ai-content-strategy.md
+python -m tools.aieo_runner analyze --workspace ./.aieo-workspace --target https://example.com/blog/post
+python -m tools.aieo_runner scrub --workspace ./.aieo-workspace --content "Raw copy"
+python -m tools.aieo_runner priorities --workspace ./.aieo-workspace
+```
+
 ### Optimize Content
 
 ```bash

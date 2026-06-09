@@ -202,6 +202,16 @@ The scoring engine also detects and penalizes anti-patterns:
 | Keyword stuffing | −15 | Any word (>4 chars) appears >5% of total words |
 | Missing structure in long content | −15 | >1000 words with no tables and no lists |
 
+## Multi-Dimension Scoring
+
+AIEO now returns additional dimensions alongside classic pattern scoring:
+
+- `dimensions.aieo` for citation readiness
+- `dimensions.seo` for SEO quality
+- `dimensions.readability` for readability quality
+- `dimensions.humanity` for editorial/human voice quality
+- `dimensions.cro` for conversion-oriented landing-page quality
+
 ## Entity Density Note
 
 Entity density scoring (Pattern 2) requires spaCy with the `en_core_web_sm` model. Without spaCy installed, this pattern always scores 0, limiting the maximum achievable score. Install with:

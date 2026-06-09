@@ -21,6 +21,7 @@ class PromptLoader:
         self.prompts_dir = Path(prompts_dir) if prompts_dir else DEFAULT_PROMPTS_DIR
         self._cache: Dict[str, str] = {}
         self._patterns_cache: Optional[List[Dict]] = None
+        self._collection_cache: Dict[str, List[Dict]] = {}
 
     def load_system_prompt(self) -> str:
         """Load the system prompt that defines the AI's role."""
@@ -99,6 +100,38 @@ Evaluate contextually: consider what type of content this is and what patterns a
     def get_total_max_score(self) -> int:
         """Return sum of all pattern weights (used for normalization)."""
         return sum(p["weight"] for p in self.load_patterns())
+
+    def load_collection(self, folder: str) -> List[Dict]:
+        """Load markdown prompt collection from prompts/<folder>/*.md."""
+        if folder in self._collection_cache:
+            return self._collection_cache[folder]
+        target = self.prompts_dir / folder
+        if not target.exists():
+            return []
+        items: List[Dict] = []
+        for md_file in sorted(target.glob("*.md")):
+            raw = self._read_file(md_file)
+            frontmatter, body = self._parse_frontmatter(raw)
+            items.append(
+                {
+                    "name": frontmatter.get("name", md_file.stem),
+                    "display_name": frontmatter.get(
+                        "display_name",
+                        md_file.stem.replace("_", " ").title(),
+                    ),
+                    "meta": frontmatter,
+                    "body": body.strip(),
+                }
+            )
+        self._collection_cache[folder] = items
+        return items
+
+    def get_collection_item(self, folder: str, name: str) -> Optional[Dict]:
+        """Get one prompt from a named collection."""
+        for item in self.load_collection(folder):
+            if item["name"] == name:
+                return item
+        return None
 
     def _format_content_summary(self, parsed: Dict) -> str:
         """Format parsed content into a readable summary for the AI."""

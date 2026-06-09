@@ -1,0 +1,52 @@
+# Manual pilot: run AIEO against bamr87/it-journey @ feature/quickstart-restructure.
+# Requires repository secrets: OPENAI_API_KEY and/or ANTHROPIC_API_KEY for enhance/expand.
+name: AIEO pilot (it-journey quickstart)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "audit-only | enhance | expand"
+        required: true
+        default: audit-only
+        type: choice
+        options:
+          - audit-only
+          - enhance
+          - expand
+      glob_pattern:
+        description: "Markdown glob under the content repo"
+        required: true
+        default: "**/*quickstart*/**/*.md"
+        type: string
+      git_diff_base:
+        description: "Optional: restrict to files changed vs this ref (e.g. main)"
+        required: false
+        default: ""
+        type: string
+      intersect_globs:
+        description: "Intersect git diff with glob_pattern"
+        required: false
+        default: false
+        type: boolean
+      write_proposed:
+        description: "Write proposed markdown under aieo-artifacts/proposed/"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  run:
+    uses: ./.github/workflows/aieo-content-reusable.yml
+    with:
+      content_repository: bamr87/it-journey
+      content_ref: feature/quickstart-restructure
+      mode: ${{ inputs.mode }}
+      glob_pattern: ${{ inputs.glob_pattern }}
+      git_diff_base: ${{ inputs.git_diff_base }}
+      intersect_globs: ${{ inputs.intersect_globs }}
+      write_proposed: ${{ inputs.write_proposed }}
+      max_files: 25
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

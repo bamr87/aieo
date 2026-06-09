@@ -12,6 +12,27 @@ export interface AuditResult {
   score: number;
   grade: string;
   gaps: Gap[];
+  dimensions?: {
+    aieo: number;
+    seo: number;
+    readability: number;
+    humanity: number;
+    cro: number;
+  };
+  seo_quality?: {
+    score: number;
+  };
+  readability?: {
+    score: number;
+  };
+  humanity?: {
+    humanity: number;
+  };
+  cro?: {
+    landing_page?: {
+      score: number;
+    };
+  };
   benchmark?: {
     percentile: number;
     engine_scores: Record<string, number>;
@@ -69,6 +90,26 @@ export interface DashboardData {
     date: string;
     count: number;
   }>;
+}
+
+export interface WorkspaceNode {
+  path: string;
+  type: 'file' | 'dir';
+}
+
+export interface WorkspaceTreeResponse {
+  nodes: WorkspaceNode[];
+}
+
+export interface WorkspaceReadResponse {
+  path: string;
+  content: string;
+}
+
+export interface LifecycleResult {
+  path: string;
+  content?: string;
+  [key: string]: unknown;
 }
 
 export interface CitedPage {

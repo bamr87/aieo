@@ -1,0 +1,152 @@
+# Reusable workflow: score/optimize markdown in another repository (or same).
+# Call from your repo with `uses: ./.github/workflows/aieo-content-reusable.yml` and pass secrets.
+name: AIEO content (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      content_repository:
+        description: "Owner/name of repo containing markdown (e.g. bamr87/it-journey)"
+        required: true
+        type: string
+      content_ref:
+        description: "Branch, tag, or SHA to checkout"
+        required: true
+        type: string
+      mode:
+        description: "audit-only | enhance | expand"
+        required: false
+        default: audit-only
+        type: string
+      glob_pattern:
+        description: "Glob relative to content repo root (Python pathlib semantics)"
+        required: false
+        default: "**/*.md"
+        type: string
+      git_diff_base:
+        description: "If set, restrict to .md files changed in REF...HEAD (three-dot)"
+        required: false
+        default: ""
+        type: string
+      intersect_globs:
+        description: "If true and git_diff_base set, intersect with glob_pattern"
+        required: false
+        default: false
+        type: boolean
+      max_files:
+        description: "Cap number of files (0 = unlimited)"
+        required: false
+        default: 0
+        type: number
+      write_proposed:
+        description: "Write optimized drafts to aieo-artifacts/proposed/"
+        required: false
+        default: false
+        type: boolean
+      apply_in_place:
+        description: "Overwrite markdown in the content repo working tree (enhance/expand only)"
+        required: false
+        default: false
+        type: boolean
+      commit_and_push:
+        description: "Commit and push changes in content checkout (needs token with push rights)"
+        required: false
+        default: false
+        type: boolean
+      python_version:
+        required: false
+        default: "3.11"
+        type: string
+    secrets:
+      OPENAI_API_KEY:
+        required: false
+      ANTHROPIC_API_KEY:
+        required: false
+      CONTENT_REPO_TOKEN:
+        description: "PAT with contents:write on content repo if commit_and_push or private checkout"
+        required: false
+
+jobs:
+  aieo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout AIEO (this workflow's repository)
+        uses: actions/checkout@v4
+
+      - name: Checkout content repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.content_repository }}
+          ref: ${{ inputs.content_ref }}
+          path: content
+          token: ${{ secrets.CONTENT_REPO_TOKEN || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install CI dependencies
+        run: pip install -r backend/requirements-ci.txt
+
+      - name: Run AIEO headless runner
+        env:
+          PYTHONPATH: ${{ github.workspace }}/backend
+          AIEO_HEADLESS: "1"
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -euo pipefail
+          ARGS=(
+            python -m tools.aieo_runner
+            --root "${GITHUB_WORKSPACE}/content"
+            --output-dir "${GITHUB_WORKSPACE}/content/aieo-artifacts"
+            --glob "${{ inputs.glob_pattern }}"
+            --mode "${{ inputs.mode }}"
+            --max-files "${{ inputs.max_files }}"
+          )
+          if [ -n "${{ inputs.git_diff_base }}" ]; then
+            ARGS+=(--git-diff-base "${{ inputs.git_diff_base }}")
+          fi
+          if [ "${{ inputs.intersect_globs }}" = "true" ]; then
+            ARGS+=(--intersect-globs)
+          fi
+          if [ "${{ inputs.write_proposed }}" = "true" ]; then
+            ARGS+=(--write-proposed)
+          fi
+          if [ "${{ inputs.apply_in_place }}" = "true" ]; then
+            ARGS+=(--apply-in-place)
+          fi
+          "${ARGS[@]}"
+
+      - name: Upload AIEO artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aieo-artifacts
+          path: content/aieo-artifacts/
+
+      - name: Commit and push (optional)
+        if: inputs.commit_and_push == true
+        env:
+          TOKEN: ${{ secrets.CONTENT_REPO_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          cd content
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          remote_url="$(git remote get-url origin)"
+          if [[ "$remote_url" == https://* ]]; then
+            git remote set-url origin "https://x-access-token:${TOKEN}@${remote_url#https://}"
+          fi
+          # Tracked-file updates only (avoids committing aieo-artifacts/ unless tracked)
+          git add -u
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(aieo): apply engine suggestions"
+          git push origin HEAD

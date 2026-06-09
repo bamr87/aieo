@@ -42,6 +42,33 @@ export function Layout({ children }: LayoutProps) {
             >
               Patterns
             </Link>
+            <Link to="/workspace" className={isActive('/workspace') ? 'active' : ''}>
+              Workspace
+            </Link>
+            <Link to="/topics" className={isActive('/topics') ? 'active' : ''}>
+              Topics
+            </Link>
+            <Link to="/research" className={isActive('/research') ? 'active' : ''}>
+              Research
+            </Link>
+            <Link to="/drafts" className={isActive('/drafts') ? 'active' : ''}>
+              Drafts
+            </Link>
+            <Link to="/rewrites" className={isActive('/rewrites') ? 'active' : ''}>
+              Rewrites
+            </Link>
+            <Link to="/published" className={isActive('/published') ? 'active' : ''}>
+              Published
+            </Link>
+            <Link to="/landing-pages" className={isActive('/landing-pages') ? 'active' : ''}>
+              Landing
+            </Link>
+            <Link to="/performance" className={isActive('/performance') ? 'active' : ''}>
+              Performance
+            </Link>
+            <Link to="/agents" className={isActive('/agents') ? 'active' : ''}>
+              Agents
+            </Link>
           </div>
         </div>
       </nav>

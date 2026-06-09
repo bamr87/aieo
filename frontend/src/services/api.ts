@@ -124,6 +124,8 @@ export const optimizeApi = {
     content: string;
     target_engines?: string[];
     style?: string;
+    content_mode?: 'enhance' | 'expand';
+    model?: string;
   }) => apiClient.post('/aieo/optimize', data),
 };
 

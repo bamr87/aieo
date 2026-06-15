@@ -13,5 +13,9 @@ class CompetitorGapAnalyzer:
         return {
             "missing_topics": missing,
             "gap_count": len(missing),
-            "recommendation": "Add sections for missing high-intent topics." if missing else "Coverage looks complete.",
+            "recommendation": (
+                "Add sections for missing high-intent topics."
+                if missing
+                else "Coverage looks complete."
+            ),
         }

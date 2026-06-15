@@ -15,6 +15,9 @@ Tools exposed:
     - aieo_get_pattern: Get detailed definition of a specific pattern
 """
 
+# Imports are intentionally split around runtime setup (path/env) below.
+# ruff: noqa: E402
+
 import json
 import logging
 import ssl
@@ -31,6 +34,7 @@ try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
     from mcp.types import Tool, TextContent
+
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
@@ -145,37 +149,65 @@ def create_mcp_server():
             Tool(
                 name="aieo_research",
                 description="Create a research brief for a topic.",
-                inputSchema={"type": "object", "properties": {"topic": {"type": "string"}}, "required": ["topic"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"topic": {"type": "string"}},
+                    "required": ["topic"],
+                },
             ),
             Tool(
                 name="aieo_write",
                 description="Write a long-form draft for a topic.",
-                inputSchema={"type": "object", "properties": {"topic": {"type": "string"}}, "required": ["topic"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"topic": {"type": "string"}},
+                    "required": ["topic"],
+                },
             ),
             Tool(
                 name="aieo_rewrite",
                 description="Rewrite an existing workspace file.",
-                inputSchema={"type": "object", "properties": {"source_path": {"type": "string"}}, "required": ["source_path"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"source_path": {"type": "string"}},
+                    "required": ["source_path"],
+                },
             ),
             Tool(
                 name="aieo_analyze_existing",
                 description="Analyze existing content URL or file.",
-                inputSchema={"type": "object", "properties": {"target": {"type": "string"}}, "required": ["target"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"target": {"type": "string"}},
+                    "required": ["target"],
+                },
             ),
             Tool(
                 name="aieo_scrub",
                 description="Remove AI-style artifacts from content.",
-                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"content": {"type": "string"}},
+                    "required": ["content"],
+                },
             ),
             Tool(
                 name="aieo_editor_review",
                 description="Run the editor agent on content.",
-                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"content": {"type": "string"}},
+                    "required": ["content"],
+                },
             ),
             Tool(
                 name="aieo_headline_generate",
                 description="Run headline-generator agent for a topic.",
-                inputSchema={"type": "object", "properties": {"topic": {"type": "string"}}, "required": ["topic"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"topic": {"type": "string"}},
+                    "required": ["topic"],
+                },
             ),
             Tool(
                 name="aieo_priorities",
@@ -185,29 +217,48 @@ def create_mcp_server():
             Tool(
                 name="aieo_landing_audit",
                 description="Audit landing page content for CRO quality.",
-                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"content": {"type": "string"}},
+                    "required": ["content"],
+                },
             ),
             Tool(
                 name="aieo_readability",
                 description="Get readability dimension for content.",
-                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"content": {"type": "string"}},
+                    "required": ["content"],
+                },
             ),
             Tool(
                 name="aieo_keyword_analysis",
                 description="Get keyword analysis for content.",
-                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"content": {"type": "string"}},
+                    "required": ["content"],
+                },
             ),
             Tool(
                 name="aieo_search_intent",
                 description="Infer search intent from content/query.",
-                inputSchema={"type": "object", "properties": {"content": {"type": "string"}}, "required": ["content"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"content": {"type": "string"}},
+                    "required": ["content"],
+                },
             ),
             Tool(
                 name="aieo_publish_wordpress",
                 description="Publish a draft path to WordPress.",
                 inputSchema={
                     "type": "object",
-                    "properties": {"draft_path": {"type": "string"}, "title": {"type": "string"}},
+                    "properties": {
+                        "draft_path": {"type": "string"},
+                        "title": {"type": "string"},
+                    },
                     "required": ["draft_path", "title"],
                 },
             ),
@@ -219,14 +270,21 @@ def create_mcp_server():
             Tool(
                 name="aieo_workspace_read",
                 description="Read one workspace file.",
-                inputSchema={"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"path": {"type": "string"}},
+                    "required": ["path"],
+                },
             ),
             Tool(
                 name="aieo_workspace_write",
                 description="Write one workspace file.",
                 inputSchema={
                     "type": "object",
-                    "properties": {"path": {"type": "string"}, "content": {"type": "string"}},
+                    "properties": {
+                        "path": {"type": "string"},
+                        "content": {"type": "string"},
+                    },
                     "required": ["path", "content"],
                 },
             ),
@@ -238,22 +296,40 @@ def create_mcp_server():
             return await _dispatch_tool(name, arguments)
         except Exception as exc:
             logger.exception("MCP tool %s failed", name)
-            return [TextContent(type="text", text=json.dumps({"error": str(exc), "tool": name}))]
+            return [
+                TextContent(
+                    type="text", text=json.dumps({"error": str(exc), "tool": name})
+                )
+            ]
 
     async def _dispatch_tool(name: str, arguments: dict):
         if name == "aieo_score_content":
             content = arguments.get("content", "")
             fmt = arguments.get("format", "markdown")
             result = engine.score(content, format=fmt)
-            return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
+            return [
+                TextContent(type="text", text=json.dumps(result, indent=2, default=str))
+            ]
 
         elif name == "aieo_audit_url":
             url = arguments.get("url", "")
             if not url.startswith(("http://", "https://")):
-                return [TextContent(type="text", text=json.dumps({"error": "URL must start with http:// or https://"}))]
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": "URL must start with http:// or https://"}
+                        ),
+                    )
+                ]
             try:
                 import httpx
-                with httpx.Client(timeout=30.0, follow_redirects=True, verify=ssl.create_default_context()) as client:
+
+                with httpx.Client(
+                    timeout=30.0,
+                    follow_redirects=True,
+                    verify=ssl.create_default_context(),
+                ) as client:
                     resp = client.get(url, headers={"User-Agent": "AIEO-Bot/1.0"})
                     resp.raise_for_status()
                     html = resp.text
@@ -262,30 +338,51 @@ def create_mcp_server():
                 screenshot_b64 = None
                 try:
                     from app.services.screenshot_service import ScreenshotService
+
                     ss = ScreenshotService()
                     ss_result = await ss.capture_async(url)
                     if "error" not in ss_result:
                         screenshot_b64 = ss_result.get("screenshot_b64")
-                        logger.info("Screenshot captured for %s (%dx%d)", url,
-                                    ss_result.get("viewport_width", 0), ss_result.get("viewport_height", 0))
+                        logger.info(
+                            "Screenshot captured for %s (%dx%d)",
+                            url,
+                            ss_result.get("viewport_width", 0),
+                            ss_result.get("viewport_height", 0),
+                        )
                     else:
-                        logger.warning("Screenshot skipped for %s: %s", url, ss_result["error"])
+                        logger.warning(
+                            "Screenshot skipped for %s: %s", url, ss_result["error"]
+                        )
                 except Exception as e:
                     logger.warning("Screenshot capture failed for %s: %s", url, e)
 
-                result = engine.score(html, format="html", screenshot_b64=screenshot_b64)
+                result = engine.score(
+                    html, format="html", screenshot_b64=screenshot_b64
+                )
                 result["url"] = url
                 if screenshot_b64:
                     result["screenshot_b64"] = screenshot_b64
-                return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
+                return [
+                    TextContent(
+                        type="text", text=json.dumps(result, indent=2, default=str)
+                    )
+                ]
             except Exception as e:
-                return [TextContent(type="text", text=json.dumps({"error": str(e), "url": url}))]
+                return [
+                    TextContent(
+                        type="text", text=json.dumps({"error": str(e), "url": url})
+                    )
+                ]
 
         elif name == "aieo_list_patterns":
             patterns = loader.load_patterns()
             summary = [
-                {"name": p["name"], "display_name": p["display_name"],
-                 "weight": p["weight"], "max_score": p["max_score"]}
+                {
+                    "name": p["name"],
+                    "display_name": p["display_name"],
+                    "weight": p["weight"],
+                    "max_score": p["max_score"],
+                }
                 for p in patterns
             ]
             return [TextContent(type="text", text=json.dumps(summary, indent=2))]
@@ -298,9 +395,17 @@ def create_mcp_server():
                 return [TextContent(type="text", text=json.dumps(match, indent=2))]
             else:
                 available = [p["name"] for p in patterns]
-                return [TextContent(type="text", text=json.dumps(
-                    {"error": f"Pattern '{pattern_name}' not found", "available": available}
-                ))]
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "error": f"Pattern '{pattern_name}' not found",
+                                "available": available,
+                            }
+                        ),
+                    )
+                ]
 
         elif name == "aieo_research":
             result = await research_service.create_brief(arguments.get("topic", ""))
@@ -313,30 +418,63 @@ def create_mcp_server():
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
         elif name == "aieo_analyze_existing":
             result = await analyze_existing_service.analyze(arguments.get("target", ""))
-            return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
+            return [
+                TextContent(type="text", text=json.dumps(result, indent=2, default=str))
+            ]
         elif name == "aieo_scrub":
             result = await scrub_service.scrub(arguments.get("content", ""))
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
         elif name == "aieo_editor_review":
-            result = await agent_runner.run_agent("editor", arguments.get("content", ""))
+            result = await agent_runner.run_agent(
+                "editor", arguments.get("content", "")
+            )
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
         elif name == "aieo_headline_generate":
             topic = arguments.get("topic", "")
-            result = await agent_runner.run_agent("headline-generator", topic, extra_inputs={"topic": topic})
+            result = await agent_runner.run_agent(
+                "headline-generator", topic, extra_inputs={"topic": topic}
+            )
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
         elif name == "aieo_priorities":
-            return [TextContent(type="text", text=json.dumps(priorities_service.build_priorities(), indent=2))]
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(priorities_service.build_priorities(), indent=2),
+                )
+            ]
         elif name == "aieo_landing_audit":
-            return [TextContent(type="text", text=json.dumps(landing_service.audit(arguments.get("content", "")), indent=2))]
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        landing_service.audit(arguments.get("content", "")), indent=2
+                    ),
+                )
+            ]
         elif name == "aieo_readability":
             result = engine.score(arguments.get("content", ""), format="markdown")
-            return [TextContent(type="text", text=json.dumps(result.get("readability", {}), indent=2))]
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(result.get("readability", {}), indent=2),
+                )
+            ]
         elif name == "aieo_keyword_analysis":
             result = engine.score(arguments.get("content", ""), format="markdown")
-            return [TextContent(type="text", text=json.dumps(result.get("keyword_analysis", {}), indent=2))]
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(result.get("keyword_analysis", {}), indent=2),
+                )
+            ]
         elif name == "aieo_search_intent":
             result = engine.score(arguments.get("content", ""), format="markdown")
-            return [TextContent(type="text", text=json.dumps(result.get("search_intent", {}), indent=2))]
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(result.get("search_intent", {}), indent=2),
+                )
+            ]
         elif name == "aieo_publish_wordpress":
             result = await publish_service.publish_wordpress(
                 draft_path=arguments.get("draft_path", ""),
@@ -347,15 +485,23 @@ def create_mcp_server():
         elif name == "aieo_workspace_list":
             workspace_service.initialize()
             nodes = [node.__dict__ for node in workspace_service.list_tree()]
-            return [TextContent(type="text", text=json.dumps({"nodes": nodes}, indent=2))]
+            return [
+                TextContent(type="text", text=json.dumps({"nodes": nodes}, indent=2))
+            ]
         elif name == "aieo_workspace_read":
             result = workspace_service.read_file(arguments.get("path", ""))
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
         elif name == "aieo_workspace_write":
-            workspace_service.write_file(arguments.get("path", ""), arguments.get("content", ""))
+            workspace_service.write_file(
+                arguments.get("path", ""), arguments.get("content", "")
+            )
             return [TextContent(type="text", text=json.dumps({"ok": True}, indent=2))]
 
-        return [TextContent(type="text", text=json.dumps({"error": f"Unknown tool: {name}"}))]
+        return [
+            TextContent(
+                type="text", text=json.dumps({"error": f"Unknown tool: {name}"})
+            )
+        ]
 
     return server
 
@@ -370,4 +516,5 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

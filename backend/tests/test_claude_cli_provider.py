@@ -40,6 +40,7 @@ def _error_envelope(status: int, message: str) -> str:
 # Envelope parsing
 # --------------------------------------------------------------------------
 
+
 def test_extract_text_success():
     assert _extract_text(_success_envelope("hello world")) == "hello world"
 
@@ -65,13 +66,16 @@ def test_extract_text_empty_raises():
 # run_claude_cli command construction
 # --------------------------------------------------------------------------
 
+
 def test_run_claude_cli_builds_command_and_returns_text(monkeypatch):
     captured = {}
 
     def fake_run(cmd, input=None, capture_output=None, text=None, timeout=None):
         captured["cmd"] = cmd
         captured["input"] = input
-        return SimpleNamespace(returncode=0, stdout=_success_envelope("scored!"), stderr="")
+        return SimpleNamespace(
+            returncode=0, stdout=_success_envelope("scored!"), stderr=""
+        )
 
     monkeypatch.setattr(claude_cli, "cli_available", lambda binary=None: True)
     monkeypatch.setattr(claude_cli.subprocess, "run", fake_run)
@@ -111,7 +115,10 @@ def test_run_claude_cli_surfaces_envelope_error_on_nonzero_exit(monkeypatch):
 # ScoringEngine provider wiring
 # --------------------------------------------------------------------------
 
-@pytest.mark.parametrize("alias", ["claude-cli", "claude_cli", "claude-code", "CLI", "oauth"])
+
+@pytest.mark.parametrize(
+    "alias", ["claude-cli", "claude_cli", "claude-code", "CLI", "oauth"]
+)
 def test_engine_normalizes_provider_aliases(alias):
     engine = ScoringEngine(provider=alias)
     assert engine.provider == "claude_cli"
@@ -173,6 +180,7 @@ def test_engine_falls_back_to_heuristic_on_cli_error(monkeypatch):
 # --------------------------------------------------------------------------
 # AIService / OptimizeService routing
 # --------------------------------------------------------------------------
+
 
 def test_ai_service_selects_cli_provider():
     svc = AIService(use_claude_cli=True, model="sonnet")

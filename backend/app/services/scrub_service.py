@@ -25,7 +25,9 @@ class ScrubService:
     async def scrub(self, content: str, model: Optional[str] = None) -> Dict:
         self.workspace.initialize()
         prompt_item = self.prompt_loader.get_collection_item("commands", "scrub")
-        base_prompt = prompt_item["body"] if prompt_item else "Rewrite to sound natural."
+        base_prompt = (
+            prompt_item["body"] if prompt_item else "Rewrite to sound natural."
+        )
         prompt = f"{base_prompt}\n\nContent:\n{content}"
         try:
             cleaned = await self.ai_service.generate(prompt=prompt, model=model)

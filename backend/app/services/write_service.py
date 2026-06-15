@@ -29,7 +29,9 @@ class WriteService:
             workspace_service=self.workspace,
         )
 
-    async def write(self, topic: str, brief_path: Optional[str] = None, model: Optional[str] = None) -> Dict:
+    async def write(
+        self, topic: str, brief_path: Optional[str] = None, model: Optional[str] = None
+    ) -> Dict:
         self.workspace.initialize()
         brief = ""
         if brief_path:
@@ -38,7 +40,9 @@ class WriteService:
             except FileNotFoundError:
                 brief = ""
         prompt_item = self.prompt_loader.get_collection_item("commands", "write")
-        base_prompt = prompt_item["body"] if prompt_item else "Write a long-form article."
+        base_prompt = (
+            prompt_item["body"] if prompt_item else "Write a long-form article."
+        )
         prompt = f"{base_prompt}\n\nTopic: {topic}\n\nResearch brief:\n{brief}\n\nReturn markdown."
         try:
             content = await self.ai_service.generate(prompt=prompt, model=model)
@@ -50,9 +54,16 @@ class WriteService:
         self.workspace.write_file(draft_path, content)
 
         agent_results = {}
-        for agent in ["seo-optimizer", "meta-creator", "internal-linker", "keyword-mapper"]:
+        for agent in [
+            "seo-optimizer",
+            "meta-creator",
+            "internal-linker",
+            "keyword-mapper",
+        ]:
             try:
-                agent_results[agent] = await self.agent_runner.run_agent(agent, content, model=model)
+                agent_results[agent] = await self.agent_runner.run_agent(
+                    agent, content, model=model
+                )
             except Exception as exc:
                 agent_results[agent] = {"error": str(exc)}
         return {"path": draft_path, "content": content, "agents": agent_results}

@@ -1,7 +1,5 @@
 """Workspace API endpoints."""
 
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -58,7 +56,9 @@ async def read_workspace_file(
     try:
         return workspace_service.read_file(request.path)
     except FileNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
+        )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
@@ -84,8 +84,12 @@ async def move_workspace_file(
 ):
     del api_key, db
     try:
-        return workspace_service.move_file(request.source_path, request.destination_path)
+        return workspace_service.move_file(
+            request.source_path, request.destination_path
+        )
     except FileNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Source file not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Source file not found"
+        )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))

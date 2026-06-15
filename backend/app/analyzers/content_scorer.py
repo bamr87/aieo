@@ -18,7 +18,9 @@ class ContentScorer:
         seo = 100 if "http" in text else 50
         humanity = min(100, int((specificity * 0.5) + (readability * 0.5)))
         return {
-            "score": round((humanity + specificity + structure + seo + readability) / 5, 1),
+            "score": round(
+                (humanity + specificity + structure + seo + readability) / 5, 1
+            ),
             "humanity": humanity,
             "specificity": specificity,
             "structure": structure,

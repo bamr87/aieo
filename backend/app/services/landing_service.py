@@ -40,7 +40,9 @@ class LandingService:
         try:
             content = await self.ai_service.generate(prompt, model=model)
         except Exception:
-            content = f"# Landing Research: {topic}\n\n- Audience\n- Offer\n- Objections\n"
+            content = (
+                f"# Landing Research: {topic}\n\n- Audience\n- Offer\n- Objections\n"
+            )
         stamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
         path = f"audits/landing-research-{topic.lower().replace(' ', '-')}-{stamp}.md"
         self.workspace.write_file(path, content)

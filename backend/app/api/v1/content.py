@@ -102,7 +102,9 @@ async def write(
     db: Session = Depends(get_db),
 ):
     del api_key, db
-    return await write_service.write(request.topic, brief_path=request.brief_path, model=request.model)
+    return await write_service.write(
+        request.topic, brief_path=request.brief_path, model=request.model
+    )
 
 
 @router.post("/aieo/rewrite")

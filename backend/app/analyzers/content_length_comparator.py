@@ -8,8 +8,16 @@ from .text_utils import word_count
 
 
 class ContentLengthComparator:
-    def compare(self, text: str, competitor_word_counts: List[int] | None = None) -> Dict:
-        competitor_word_counts = competitor_word_counts or [1200, 1500, 1800, 2200, 2600]
+    def compare(
+        self, text: str, competitor_word_counts: List[int] | None = None
+    ) -> Dict:
+        competitor_word_counts = competitor_word_counts or [
+            1200,
+            1500,
+            1800,
+            2200,
+            2600,
+        ]
         wc = word_count(text)
         ordered = sorted(competitor_word_counts)
         median = ordered[len(ordered) // 2]
@@ -22,6 +30,8 @@ class ContentLengthComparator:
             "optimal_target": p75,
             "gap_to_target": gap,
             "recommendation": (
-                "Expand depth with examples and FAQs." if wc < median else "Length is competitive."
+                "Expand depth with examples and FAQs."
+                if wc < median
+                else "Length is competitive."
             ),
         }

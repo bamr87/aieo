@@ -19,11 +19,7 @@ class AIService:
         use_claude_cli: bool = False,
         model: Optional[str] = None,
     ):
-        oa = (
-            openai_api_key
-            if openai_api_key is not None
-            else settings.OPENAI_API_KEY
-        )
+        oa = openai_api_key if openai_api_key is not None else settings.OPENAI_API_KEY
         an = (
             anthropic_api_key
             if anthropic_api_key is not None
@@ -202,9 +198,7 @@ Return the optimized content:"""
         # Only forward an explicit Claude model name; otherwise let the CLI
         # helper apply its default (sonnet / AIEO_CLAUDE_CLI_MODEL).
         cli_model = (
-            model
-            if (model and "claude" in str(model).lower())
-            else self.cli_model
+            model if (model and "claude" in str(model).lower()) else self.cli_model
         )
         return await asyncio.to_thread(run_claude_cli, prompt, model=cli_model)
 

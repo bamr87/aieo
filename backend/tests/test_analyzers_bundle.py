@@ -25,7 +25,12 @@ def test_keyword_intent_length_humanity():
     length = ContentLengthComparator().compare(text, [100, 200, 300])
     humanity = ContentScorer().score(text)
     assert "primary" in keyword
-    assert intent["intent"] in {"informational", "navigational", "transactional", "commercial"}
+    assert intent["intent"] in {
+        "informational",
+        "navigational",
+        "transactional",
+        "commercial",
+    }
     assert "optimal_target" in length
     assert "humanity" in humanity
 

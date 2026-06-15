@@ -44,7 +44,9 @@ class ScreenshotService:
         try:
             from playwright.sync_api import sync_playwright
         except ImportError:
-            logger.warning("Playwright not installed. Install with: pip install playwright && playwright install chromium")
+            logger.warning(
+                "Playwright not installed. Install with: pip install playwright && playwright install chromium"
+            )
             return {"error": "playwright not available"}
 
         result = {
@@ -57,7 +59,10 @@ class ScreenshotService:
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
                 context = browser.new_context(
-                    viewport={"width": self.viewport_width, "height": self.viewport_height},
+                    viewport={
+                        "width": self.viewport_width,
+                        "height": self.viewport_height,
+                    },
                     user_agent="AIEO-Bot/1.0 (screenshot)",
                 )
                 page = context.new_page()
@@ -119,7 +124,10 @@ class ScreenshotService:
             async with async_playwright() as p:
                 browser = await p.chromium.launch(headless=True)
                 context = await browser.new_context(
-                    viewport={"width": self.viewport_width, "height": self.viewport_height},
+                    viewport={
+                        "width": self.viewport_width,
+                        "height": self.viewport_height,
+                    },
                     user_agent="AIEO-Bot/1.0 (screenshot)",
                 )
                 page = await context.new_page()
@@ -127,7 +135,9 @@ class ScreenshotService:
                 await page.goto(url, wait_until="networkidle", timeout=30000)
                 await page.wait_for_timeout(1000)
 
-                screenshot_bytes = await page.screenshot(full_page=full_page, type="png")
+                screenshot_bytes = await page.screenshot(
+                    full_page=full_page, type="png"
+                )
                 screenshot_b64 = base64.b64encode(screenshot_bytes).decode("utf-8")
                 result["screenshot_b64"] = screenshot_b64
 

@@ -8,7 +8,8 @@ evaluates content contextually, replacing hardcoded regex pattern matching.
 Supports:
 - OpenAI (GPT-4, GPT-4o, etc.)
 - Anthropic (Claude 3.5, Claude 3, etc.)
-- Heuristic fallback when no API key is configured
+- Claude Code CLI via OAuth (provider="claude-cli", no API key needed)
+- Heuristic fallback when no provider is configured
 """
 
 import json
@@ -66,6 +67,33 @@ class ScoringEngine:
 
     def _resolve_config(self):
         """Resolve provider/key/model from environment if not explicitly set."""
+        # Opt into the Claude Code CLI (OAuth) provider via env when nothing
+        # else was passed in, e.g. AIEO_PROVIDER=claude-cli.
+        if not self.provider and not self.api_key:
+            env_provider = os.environ.get("AIEO_PROVIDER")
+            if env_provider:
+                self.provider = env_provider
+
+        if self.provider:
+            self.provider = self._normalize_provider(self.provider)
+
+        # Explicitly forced heuristic (offline) scoring — never call AI even if
+        # the server has a provider key configured.
+        if self.provider == "heuristic":
+            self.provider = None
+            self.api_key = None
+            return
+
+        # The Claude Code CLI authenticates over OAuth through the `claude`
+        # binary, so it needs no API key. Resolve only the model and return.
+        if self.provider == "claude_cli":
+            self.model = (
+                self.model
+                or os.environ.get("AIEO_CLAUDE_CLI_MODEL")
+                or "sonnet"
+            )
+            return
+
         if self.api_key:
             if not self.provider:
                 self.provider = self._detect_provider(self.api_key)
@@ -103,6 +131,28 @@ class ScoringEngine:
             return "anthropic"
         return "openai"
 
+    @staticmethod
+    def _normalize_provider(provider: str) -> str:
+        """Normalize provider aliases to a canonical name.
+
+        The Claude Code CLI (OAuth) provider accepts several friendly spellings;
+        they all canonicalize to ``claude_cli``.
+        """
+        canonical = provider.strip().lower().replace("-", "_")
+        if canonical in {
+            "claude_cli",
+            "claude_code",
+            "claude_code_cli",
+            "claudecli",
+            "cli",
+            "oauth",
+            "claude_oauth",
+        }:
+            return "claude_cli"
+        if canonical in {"heuristic", "none", "off", "offline"}:
+            return "heuristic"
+        return canonical
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
@@ -125,7 +175,11 @@ class ScoringEngine:
         """
         parsed = self.parser.parse(content, format)
 
-        if self.api_key and self.provider:
+        # The Claude Code CLI provider authenticates via OAuth and needs no key;
+        # every other AI provider requires an API key.
+        ai_ready = self.provider == "claude_cli" or bool(self.api_key and self.provider)
+
+        if ai_ready:
             try:
                 return self._score_with_ai(parsed, screenshot_b64=screenshot_b64)
             except Exception as e:
@@ -157,6 +211,8 @@ class ScoringEngine:
             return self._call_openai(system_prompt, user_prompt, screenshot_b64)
         elif self.provider == "anthropic":
             return self._call_anthropic(system_prompt, user_prompt, screenshot_b64)
+        elif self.provider == "claude_cli":
+            return self._call_claude_cli(system_prompt, user_prompt, screenshot_b64)
         else:
             raise ValueError(f"Unknown AI provider: {self.provider}")
 
@@ -216,6 +272,20 @@ class ScoringEngine:
             ],
         )
         return message.content[0].text
+
+    def _call_claude_cli(self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None) -> str:
+        """Call the locally authenticated Claude Code CLI (OAuth, no API key).
+
+        Vision input is not supported through the CLI, so a screenshot — if
+        provided — is ignored and the content is scored as text.
+        """
+        from .claude_cli import run_claude_cli
+
+        if screenshot_b64:
+            logger.info(
+                "Claude CLI provider does not support screenshot vision; scoring text only."
+            )
+        return run_claude_cli(user_prompt, system_prompt=system_prompt, model=self.model)
 
     def _parse_ai_response(self, raw: str) -> Dict:
         """Parse the AI's JSON response, handling common formatting issues."""

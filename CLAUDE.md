@@ -29,6 +29,8 @@ The most important thing to understand before changing scoring behavior: **all s
 
 Provider/model/key resolution order (`_resolve_config`): explicit args → `core.config.settings` → `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` env vars. `scoring_engine_legacy.py` is the old hardcoded-rules engine, kept for reference — prefer `scoring_engine.py`.
 
+A third provider, **`claude-cli`** (aliases `claude_cli`/`claude-code`/`cli`/`oauth`, or `AIEO_PROVIDER=claude-cli`), scores via the locally authenticated **Claude Code CLI over OAuth — no API key**. `backend/app/services/claude_cli.py` shells out to `claude -p --output-format json` and is used by both `ScoringEngine` (audit) and `AIService` (optimize/rewrite). It needs no key, ignores screenshots (no vision), and on any failure (missing binary, 401, timeout) raises `ClaudeCLIError` so scoring falls back to heuristic. See [docs/CLAUDE_CLI_PROVIDER.md](docs/CLAUDE_CLI_PROVIDER.md).
+
 ## Service-oriented architecture
 
 Each capability is a service class in `backend/app/services/` consumed by all three surfaces. Key ones beyond scoring:
@@ -43,8 +45,18 @@ Each capability is a service class in `backend/app/services/` consumed by all th
 ## The three surfaces (all thin wrappers over services)
 
 - **REST API** — `backend/app/main.py` mounts routers from `backend/app/api/v1/` under `/api/v1`: audit, optimize, citations, patterns, workspace, content. Lifecycle endpoints live in `content.py` under `/api/v1/aieo/*` (e.g. `/api/v1/aieo/research`, `/aieo/write`, `/aieo/publish/wordpress`). Async tasks use Celery (`backend/app/tasks/`).
-- **MCP server** — [backend/app/mcp_server.py](backend/app/mcp_server.py) exposes ~25 `aieo_*` tools (`aieo_score_content`, `aieo_audit_url`, `aieo_research`, `aieo_workspace_*`, etc.). Run with `python -m backend.app.mcp_server`. This is what Claude Desktop / Copilot call.
+- **MCP server** — [backend/app/mcp_server.py](backend/app/mcp_server.py) exposes ~20 `aieo_*` tools (`aieo_score_content`, `aieo_audit_url`, `aieo_research`, `aieo_workspace_*`, etc.). Run with `python -m backend.app.mcp_server`. This is what Claude Desktop / Copilot call.
 - **CLI & standalone scripts** — `cli/aieo/` is a Click CLI (`audit`, `optimize`, `dashboard`). Repo-root `run_audit.py` (batch audit of URLs in `sites.txt`) and `generate_reports.py` run *without the full backend* — they import the scoring engine directly and work in heuristic mode with no API key.
+
+## Frontend (`frontend/`)
+
+A React 19 + TypeScript + Vite SPA (Tailwind v4) that consumes the same REST API. It's a thin client over `/api/v1/aieo/*` — no business logic. Key conventions for changing it:
+
+- **Design system in `src/components/ui/`** (Button, Card, Field, Badge, ScoreRing, Modal, Tabs, JsonView, Markdown/ContentViewer, …) built on Tailwind tokens in `src/index.css` (`bg-canvas`/`bg-card`/`text-ink`/`text-muted`/`bg-brand`/…). Compose these; don't hand-roll styles. App shell + grouped sidebar nav is `src/components/AppShell.tsx` + `src/components/nav.ts`.
+- **API layer in `src/services/`** — typed client (`api.ts`, normalized `ApiError`, request timeouts), one module per area, imported via the `services` barrel. Every call needs an `X-API-Key` (set in the Settings page → localStorage). Audit/optimize accept a `provider` (`auto`/`claude-cli`/`openai`/`anthropic`/`heuristic`) via the provider selector.
+- **Hooks** — `useSettings` (key/provider/model), `useToast`, `useAsyncAction` (loading/error; `run(thunk)` returns the value or `undefined`), `useAuditHistory`.
+- Pages use loading/error/empty states (never raw `<pre>` JSON dumps — use `JsonView`/`ContentViewer`). Backend `/aieo/agent/run` returns `{agent, result}`; unwrap readable text with `lib/agentText.ts`. The audit endpoint passes the **full** scoring result through (dimensions, pattern_scores, scoring_method), not just score/grade.
+- Run: `cd frontend && npm install && npm run dev` (5173). Backend can run headless on sqlite: `AIEO_HEADLESS=1 DATABASE_URL=sqlite:///./aieo_dev.db REDIS_URL= uvicorn app.main:app --port 8000`.
 
 ## Commands
 

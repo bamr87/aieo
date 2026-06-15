@@ -16,6 +16,8 @@ class AIService:
         self,
         openai_api_key: Optional[str] = None,
         anthropic_api_key: Optional[str] = None,
+        use_claude_cli: bool = False,
+        model: Optional[str] = None,
     ):
         oa = (
             openai_api_key
@@ -29,6 +31,10 @@ class AIService:
         )
         self.openai_client = AsyncOpenAI(api_key=oa) if oa else None
         self.anthropic_client = AsyncAnthropic(api_key=an) if an else None
+        # When set, optimize/generate calls route through the locally
+        # authenticated Claude Code CLI (OAuth) instead of an API key.
+        self.use_claude_cli = use_claude_cli
+        self.cli_model = model
 
     def _load_expand_instructions(self) -> str:
         path = _PROMPTS_DIR / "optimize_expand.md"
@@ -43,6 +49,8 @@ class AIService:
         not, so an Anthropic-only (or OpenAI-only) setup still works even when the
         default model name points at the other provider.
         """
+        if self.use_claude_cli:
+            return "claude_cli"
         prefers_claude = "claude" in model.lower()
         if prefers_claude and self.anthropic_client:
             return "anthropic"
@@ -82,14 +90,20 @@ class AIService:
 
         prompt = self._build_optimization_prompt(content, gaps, style, content_mode)
 
-        if self._select_provider(model) == "anthropic":
+        provider = self._select_provider(model)
+        if provider == "claude_cli":
+            return await self._optimize_with_claude_cli(prompt, model)
+        if provider == "anthropic":
             return await self._optimize_with_claude(prompt, model)
         return await self._optimize_with_openai(prompt, model)
 
     async def generate(self, prompt: str, model: Optional[str] = None) -> str:
         """Run a generic prompt completion."""
         chosen_model = model or settings.DEFAULT_AI_MODEL
-        if self._select_provider(chosen_model) == "anthropic":
+        provider = self._select_provider(chosen_model)
+        if provider == "claude_cli":
+            return await self._optimize_with_claude_cli(prompt, chosen_model)
+        if provider == "anthropic":
             return await self._optimize_with_claude(prompt, chosen_model)
         return await self._optimize_with_openai(prompt, chosen_model)
 
@@ -178,6 +192,21 @@ Return the optimized content:"""
             return response.choices[0].message.content
         except Exception as e:
             raise ValueError(f"OpenAI API error: {e}")
+
+    async def _optimize_with_claude_cli(self, prompt: str, model: Optional[str]) -> str:
+        """Optimize content using the Claude Code CLI (OAuth, no API key)."""
+        import asyncio
+
+        from .claude_cli import run_claude_cli
+
+        # Only forward an explicit Claude model name; otherwise let the CLI
+        # helper apply its default (sonnet / AIEO_CLAUDE_CLI_MODEL).
+        cli_model = (
+            model
+            if (model and "claude" in str(model).lower())
+            else self.cli_model
+        )
+        return await asyncio.to_thread(run_claude_cli, prompt, model=cli_model)
 
     async def _optimize_with_claude(self, prompt: str, model: str) -> str:
         """Optimize content using Claude."""

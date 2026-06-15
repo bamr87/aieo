@@ -17,11 +17,23 @@ class GoogleSearchConsoleDataSource:
             cached = self.cache.load("gsc_queries")
             if cached:
                 return {**cached, "source": "cache"}
-            return {"source": "mock", "configured": False, "queries": [], "message": "GSC site URL not configured"}
+            return {
+                "source": "mock",
+                "configured": False,
+                "queries": [],
+                "message": "GSC site URL not configured",
+            }
         payload = {
             "source": "gsc",
             "configured": True,
-            "queries": [{"query": "example keyword", "clicks": 0, "impressions": 0, "position": 0}],
+            "queries": [
+                {
+                    "query": "example keyword",
+                    "clicks": 0,
+                    "impressions": 0,
+                    "position": 0,
+                }
+            ],
         }
         self.cache.save("gsc_queries", payload)
         return payload

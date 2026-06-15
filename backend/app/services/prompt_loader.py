@@ -47,13 +47,17 @@ class PromptLoader:
         for md_file in sorted(patterns_dir.glob("*.md")):
             raw = self._read_file(md_file)
             frontmatter, body = self._parse_frontmatter(raw)
-            patterns.append({
-                "name": frontmatter.get("name", md_file.stem),
-                "display_name": frontmatter.get("display_name", md_file.stem.replace("_", " ").title()),
-                "weight": int(frontmatter.get("weight", 10)),
-                "max_score": int(frontmatter.get("max_score", 10)),
-                "body": body.strip(),
-            })
+            patterns.append(
+                {
+                    "name": frontmatter.get("name", md_file.stem),
+                    "display_name": frontmatter.get(
+                        "display_name", md_file.stem.replace("_", " ").title()
+                    ),
+                    "weight": int(frontmatter.get("weight", 10)),
+                    "max_score": int(frontmatter.get("max_score", 10)),
+                    "body": body.strip(),
+                }
+            )
 
         self._patterns_cache = patterns
         return patterns
@@ -156,7 +160,9 @@ Evaluate contextually: consider what type of content this is and what patterns a
         if tables:
             table_info = []
             for i, t in enumerate(tables[:10]):
-                table_info.append(f"  - Table {i+1}: {t.get('row_count', 0)} rows × {t.get('column_count', 0)} columns")
+                table_info.append(
+                    f"  - Table {i+1}: {t.get('row_count', 0)} rows × {t.get('column_count', 0)} columns"
+                )
                 if t.get("rows"):
                     header_row = " | ".join(str(c) for c in t["rows"][0][:5])
                     table_info.append(f"    Headers: {header_row}")
@@ -168,8 +174,8 @@ Evaluate contextually: consider what type of content this is and what patterns a
         lists = parsed.get("lists", [])
         if lists:
             list_info = "\n".join(
-                f"  - {l['type']} list: {l.get('item_count', 0)} items"
-                for l in lists[:10]
+                f"  - {lst['type']} list: {lst.get('item_count', 0)} items"
+                for lst in lists[:10]
             )
             sections.append(f"**Lists ({len(lists)}):**\n{list_info}")
         else:
@@ -177,13 +183,21 @@ Evaluate contextually: consider what type of content this is and what patterns a
 
         # Links
         links = parsed.get("links", [])
-        external_links = [l for l in links if l.get("url", "").startswith(("http://", "https://"))]
-        sections.append(f"**Links:** {len(links)} total, {len(external_links)} external")
+        external_links = [
+            lnk
+            for lnk in links
+            if lnk.get("url", "").startswith(("http://", "https://"))
+        ]
+        sections.append(
+            f"**Links:** {len(links)} total, {len(external_links)} external"
+        )
 
         # Full text (truncated for large content)
         text = parsed.get("text", "")
         if len(text) > 12000:
-            sections.append(f"**Content text (truncated to 12000 chars):**\n\n{text[:12000]}...")
+            sections.append(
+                f"**Content text (truncated to 12000 chars):**\n\n{text[:12000]}..."
+            )
         else:
             sections.append(f"**Content text:**\n\n{text}")
 

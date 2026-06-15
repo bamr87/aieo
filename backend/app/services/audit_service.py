@@ -22,9 +22,27 @@ class AuditService:
     def __init__(self):
         self.scoring_engine = ScoringEngine()
         self.benchmark_service = BenchmarkService()
+        self._engines: Dict[tuple, ScoringEngine] = {}
         self.redis_client = (
             redis.Redis.from_url(settings.REDIS_URL) if settings.REDIS_URL else None
         )
+
+    def _engine_for(
+        self, provider: Optional[str], model: Optional[str]
+    ) -> ScoringEngine:
+        """Return a scoring engine for the requested provider/model.
+
+        Falls back to the shared default engine when no override is given;
+        otherwise builds and caches one per (provider, model) pair.
+        """
+        if not provider and not model:
+            return self.scoring_engine
+        key = (provider or "", model or "")
+        engine = self._engines.get(key)
+        if engine is None:
+            engine = ScoringEngine(provider=provider, model=model)
+            self._engines[key] = engine
+        return engine
 
     @track_performance
     async def audit(
@@ -34,6 +52,8 @@ class AuditService:
         format: str = "markdown",
         user_id: Optional[str] = None,
         db: Session = None,
+        provider: Optional[str] = None,
+        model: Optional[str] = None,
     ) -> Dict:
         """
         Audit content and return score with gaps.
@@ -44,6 +64,9 @@ class AuditService:
             format: Content format ('markdown' or 'html')
             user_id: Optional user ID
             db: Database session
+            provider: Optional scoring provider override (openai / anthropic /
+                claude-cli / heuristic). When omitted, the server default is used.
+            model: Optional model override for the chosen provider.
 
         Returns:
             Audit result dictionary
@@ -59,14 +82,18 @@ class AuditService:
         else:
             raise ValueError("Either url or content must be provided")
 
-        # Check cache
-        cache_key = self._get_cache_key(content)
+        # Pick the scoring engine — a per-request one when a provider/model
+        # override is supplied, else the shared default.
+        engine = self._engine_for(provider, model)
+
+        # Check cache (keyed by content + provider/model so overrides don't collide)
+        cache_key = self._get_cache_key(content, provider, model, format)
         cached_result = self._get_from_cache(cache_key)
         if cached_result:
             return cached_result
 
         # Score content
-        score_result = self.scoring_engine.score(content, format)
+        score_result = engine.score(content, format)
 
         # Generate benchmark
         benchmark = await self.benchmark_service.calculate_benchmark(
@@ -74,14 +101,12 @@ class AuditService:
             score=score_result["score"],
         )
 
-        # Build result
-        result = {
-            "score": score_result["score"],
-            "grade": score_result["grade"],
-            "gaps": score_result.get("gaps", []),
-            "fixes": [],  # Will be populated by optimization service
-            "benchmark": benchmark,
-        }
+        # Build result — pass through the full scoring output (dimensions,
+        # pattern_scores, scoring_method, provider, assessment, …) and layer
+        # the benchmark on top.
+        result = dict(score_result)
+        result["fixes"] = []  # Will be populated by optimization service
+        result["benchmark"] = benchmark
 
         # Cache result
         self._save_to_cache(cache_key, result)
@@ -127,12 +152,19 @@ class AuditService:
         except Exception as e:
             raise FetchFailedError(f"Error fetching URL: {str(e)}")
 
-    def _get_cache_key(self, content: str) -> str:
-        """Generate cache key from content hash."""
+    def _get_cache_key(
+        self,
+        content: str,
+        provider: Optional[str] = None,
+        model: Optional[str] = None,
+        format: str = "markdown",
+    ) -> str:
+        """Generate cache key from content hash + provider/model/format."""
         from .content_parser import ContentParser
 
         parser = ContentParser()
-        return f"audit:{parser._hash_content(content)}"
+        suffix = f"{provider or 'default'}:{model or 'default'}:{format}"
+        return f"audit:{parser._hash_content(content)}:{suffix}"
 
     def _get_from_cache(self, cache_key: str) -> Optional[Dict]:
         """Get cached audit result."""

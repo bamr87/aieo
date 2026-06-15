@@ -129,15 +129,58 @@ class ScoringEngine:
                 matches = re.findall(pattern, text)
                 found_entities.update(matches)
             # Filter out common non-entity uppercase words
-            stopwords = {"THE", "AND", "FOR", "BUT", "NOT", "YOU", "ALL",
-                         "CAN", "HER", "WAS", "ONE", "OUR", "OUT", "ARE",
-                         "HAS", "HIS", "HOW", "ITS", "LET", "MAY", "NEW",
-                         "NOW", "OLD", "SEE", "WAY", "WHO", "DID", "GET",
-                         "HIM", "USE", "SAY", "SHE", "TWO", "HOW", "FROM",
-                         "WITH", "THIS", "THAT", "HAVE", "WILL", "WHAT",
-                         "WHEN", "MAKE", "LIKE", "JUST", "OVER", "SUCH"}
-            entity_count = len({e for e in found_entities
-                               if e.upper() not in stopwords and len(e) > 1})
+            stopwords = {
+                "THE",
+                "AND",
+                "FOR",
+                "BUT",
+                "NOT",
+                "YOU",
+                "ALL",
+                "CAN",
+                "HER",
+                "WAS",
+                "ONE",
+                "OUR",
+                "OUT",
+                "ARE",
+                "HAS",
+                "HIS",
+                "HOW",
+                "ITS",
+                "LET",
+                "MAY",
+                "NEW",
+                "NOW",
+                "OLD",
+                "SEE",
+                "WAY",
+                "WHO",
+                "DID",
+                "GET",
+                "HIM",
+                "USE",
+                "SAY",
+                "SHE",
+                "TWO",
+                "HOW",
+                "FROM",
+                "WITH",
+                "THIS",
+                "THAT",
+                "HAVE",
+                "WILL",
+                "WHAT",
+                "WHEN",
+                "MAKE",
+                "LIKE",
+                "JUST",
+                "OVER",
+                "SUCH",
+            }
+            entity_count = len(
+                {e for e in found_entities if e.upper() not in stopwords and len(e) > 1}
+            )
 
         entities_per_100 = (entity_count / word_count) * 100
         score = min(15, (entities_per_100 / 3) * 15)
@@ -175,7 +218,8 @@ class ScoringEngine:
 
         # Count external links as citation signals
         external_links = [
-            link for link in parsed.get("links", [])
+            link
+            for link in parsed.get("links", [])
             if link.get("url", "").startswith(("http://", "https://"))
             and link.get("text", "").strip()
         ]
@@ -215,8 +259,7 @@ class ScoringEngine:
             r"you (?:might|may) (?:also )?(?:ask|wonder)",
         ]
         nested_count = sum(
-            len(re.findall(pattern, text, re.IGNORECASE))
-            for pattern in nested_patterns
+            len(re.findall(pattern, text, re.IGNORECASE)) for pattern in nested_patterns
         )
 
         # Score: 15 points max

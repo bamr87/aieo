@@ -84,9 +84,13 @@ def _parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--provider",
-        choices=("openai", "anthropic"),
+        choices=("openai", "anthropic", "claude-cli", "claude-code"),
         default=None,
-        help="AI provider (optional; inferred from API keys if omitted)",
+        help=(
+            "AI provider (optional; inferred from API keys if omitted). "
+            "Use 'claude-cli' to score/optimize via the locally authenticated "
+            "Claude Code CLI over OAuth — no API key needed."
+        ),
     )
     p.add_argument("--model", default=None, help="Model name for optimize call")
     p.add_argument(
@@ -254,12 +258,16 @@ async def _run_async(args: argparse.Namespace) -> int:
     )
 
     if args.mode != "audit-only":
+        cli_ready = getattr(opt.ai_service, "use_claude_cli", False)
         if not (
-            opt.ai_service.openai_client or opt.ai_service.anthropic_client
+            cli_ready
+            or opt.ai_service.openai_client
+            or opt.ai_service.anthropic_client
         ):
             print(
-                "enhance/expand requires OPENAI_API_KEY or ANTHROPIC_API_KEY "
-                "(or --api-key with --provider).",
+                "enhance/expand requires an AI provider: set OPENAI_API_KEY or "
+                "ANTHROPIC_API_KEY (or --api-key with --provider), or use "
+                "--provider claude-cli for the Claude Code CLI (OAuth).",
                 file=sys.stderr,
             )
             return 2

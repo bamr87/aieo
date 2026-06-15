@@ -33,6 +33,11 @@ class OptimizeService:
             api_key=api_key,
             model=model,
         )
+        # Claude Code CLI provider: OAuth via the `claude` binary, no API key.
+        if engine.provider == "claude_cli":
+            ai = AIService(use_claude_cli=True, model=engine.model)
+            return cls(scoring_engine=engine, ai_service=ai)
+
         openai_key = None
         anthropic_key = None
         if api_key:

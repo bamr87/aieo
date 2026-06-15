@@ -19,5 +19,7 @@ class LandingPageScorer:
         above = self.above_fold.analyze(text)
         cta = self.cta.analyze(text)
         trust = self.trust.analyze(text)
-        total = round((above["score"] * 0.4) + (cta["score"] * 0.35) + (trust["score"] * 0.25), 1)
+        total = round(
+            (above["score"] * 0.4) + (cta["score"] * 0.35) + (trust["score"] * 0.25), 1
+        )
         return {"score": total, "above_fold": above, "cta": cta, "trust": trust}

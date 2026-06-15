@@ -4,10 +4,14 @@
 Supports AI-driven scoring when OPENAI_API_KEY or ANTHROPIC_API_KEY is set.
 Falls back to heuristic scoring otherwise.
 
+Also supports the Claude Code CLI (OAuth) as a provider — no API key needed,
+as long as `claude` is installed and logged in.
+
 Usage:
-    python run_audit.py                         # heuristic mode
-    OPENAI_API_KEY=sk-... python run_audit.py   # AI-driven mode
+    python run_audit.py                          # heuristic mode
+    OPENAI_API_KEY=sk-... python run_audit.py    # AI-driven mode
     python run_audit.py --provider openai --model gpt-4o
+    python run_audit.py --provider claude-cli    # Claude Code CLI over OAuth
 """
 
 import argparse
@@ -50,7 +54,11 @@ def url_to_filename(url: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="AIEO Batch Audit")
-    parser.add_argument("--provider", choices=["openai", "anthropic"], help="AI provider")
+    parser.add_argument(
+        "--provider",
+        choices=["openai", "anthropic", "claude-cli", "claude-code"],
+        help="AI provider ('claude-cli' uses the Claude Code CLI over OAuth — no API key)",
+    )
     parser.add_argument("--model", help="Model name (e.g., gpt-4o, claude-sonnet-4-20250514)")
     parser.add_argument("--api-key", help="API key (or set OPENAI_API_KEY / ANTHROPIC_API_KEY env var)")
     parser.add_argument("--sites", default="sites.txt", help="Path to sites file")

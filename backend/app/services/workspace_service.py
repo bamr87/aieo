@@ -32,7 +32,7 @@ CONTEXT_TEMPLATES: Dict[str, str] = {
     "context/seo-guidelines.md": "# SEO Guidelines\n\n## Required checks\n\n- Word count:\n- Keyword usage:\n- Link strategy:\n- Meta constraints:\n",
     "context/cro-best-practices.md": "# CRO Best Practices\n\n## Above-the-fold\n\n- \n\n## CTA\n\n- \n",
     "context/features.md": "# Product Features\n\n## Core features\n\n- Feature:\n- Benefit:\n",
-    "config/competitors.json": "{\n  \"competitors\": [],\n  \"keywords\": []\n}\n",
+    "config/competitors.json": '{\n  "competitors": [],\n  "keywords": []\n}\n',
 }
 
 
@@ -73,7 +73,9 @@ class WorkspaceService:
         nodes: List[WorkspaceNode] = []
         for path in sorted(self.root.rglob("*")):
             rel = path.relative_to(self.root).as_posix()
-            nodes.append(WorkspaceNode(path=rel, type="dir" if path.is_dir() else "file"))
+            nodes.append(
+                WorkspaceNode(path=rel, type="dir" if path.is_dir() else "file")
+            )
         return nodes
 
     def read_file(self, rel_path: str) -> Dict[str, str]:

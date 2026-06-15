@@ -25,7 +25,9 @@ class ResearchService:
     async def create_brief(self, topic: str, model: Optional[str] = None) -> Dict:
         self.workspace.initialize()
         prompt_item = self.prompt_loader.get_collection_item("commands", "research")
-        base_prompt = prompt_item["body"] if prompt_item else "Create a content research brief."
+        base_prompt = (
+            prompt_item["body"] if prompt_item else "Create a content research brief."
+        )
         prompt = f"{base_prompt}\n\nTopic: {topic}\n\nReturn markdown."
         try:
             content = await self.ai_service.generate(prompt=prompt, model=model)

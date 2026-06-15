@@ -17,7 +17,12 @@ class DataForSEODataSource:
             cached = self.cache.load("dfs_serp")
             if cached:
                 return {**cached, "source": "cache"}
-            return {"source": "mock", "configured": False, "serp": [], "message": "DataForSEO credentials not configured"}
+            return {
+                "source": "mock",
+                "configured": False,
+                "serp": [],
+                "message": "DataForSEO credentials not configured",
+            }
         payload = {
             "source": "dataforseo",
             "configured": True,

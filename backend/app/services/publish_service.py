@@ -14,9 +14,13 @@ class PublishService:
         self.workspace = workspace or WorkspaceService(workspace_root())
         self.wp = WordPressPublisher()
 
-    async def publish_wordpress(self, draft_path: str, title: str, metadata: Optional[Dict] = None) -> Dict:
+    async def publish_wordpress(
+        self, draft_path: str, title: str, metadata: Optional[Dict] = None
+    ) -> Dict:
         content = self.workspace.read_file(draft_path)["content"]
-        result = await self.wp.publish(title=title, content=content, metadata=metadata or {})
+        result = await self.wp.publish(
+            title=title, content=content, metadata=metadata or {}
+        )
         if result.get("published"):
             published_path = draft_path.replace("drafts/", "published/")
             self.workspace.write_file(published_path, content)

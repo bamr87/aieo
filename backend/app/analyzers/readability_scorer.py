@@ -8,7 +8,9 @@ from typing import Dict
 from .text_utils import avg_sentence_length, sentence_count, word_count
 
 
-_PASSIVE_RE = re.compile(r"\b(?:is|are|was|were|be|been|being)\s+\w+ed\b", re.IGNORECASE)
+_PASSIVE_RE = re.compile(
+    r"\b(?:is|are|was|were|be|been|being)\s+\w+ed\b", re.IGNORECASE
+)
 
 
 class ReadabilityScorer:

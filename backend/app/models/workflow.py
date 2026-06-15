@@ -14,7 +14,9 @@ class Topic(Base):
     title = Column(String(255), nullable=False, index=True)
     path = Column(String(512), nullable=False, unique=True)
     stage = Column(String(50), nullable=False, default="topics")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class ResearchBrief(Base):
@@ -24,7 +26,9 @@ class ResearchBrief(Base):
     title = Column(String(255), nullable=False)
     path = Column(String(512), nullable=False, unique=True)
     stage = Column(String(50), nullable=False, default="research")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class Draft(Base):
@@ -34,7 +38,9 @@ class Draft(Base):
     title = Column(String(255), nullable=False)
     path = Column(String(512), nullable=False, unique=True)
     stage = Column(String(50), nullable=False, default="drafts")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class Rewrite(Base):
@@ -44,7 +50,9 @@ class Rewrite(Base):
     title = Column(String(255), nullable=False)
     path = Column(String(512), nullable=False, unique=True)
     stage = Column(String(50), nullable=False, default="rewrites")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class PublishedArticle(Base):
@@ -54,7 +62,9 @@ class PublishedArticle(Base):
     title = Column(String(255), nullable=False)
     path = Column(String(512), nullable=False, unique=True)
     stage = Column(String(50), nullable=False, default="published")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class LandingPage(Base):
@@ -64,7 +74,9 @@ class LandingPage(Base):
     title = Column(String(255), nullable=False)
     path = Column(String(512), nullable=False, unique=True)
     stage = Column(String(50), nullable=False, default="landing-pages")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class AuditRun(Base):
@@ -74,4 +86,6 @@ class AuditRun(Base):
     path = Column(String(512), nullable=False, unique=True)
     stage = Column(String(50), nullable=False)
     latest_score = Column(Float, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

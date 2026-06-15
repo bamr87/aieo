@@ -24,6 +24,15 @@ class PrioritiesService:
                 trend_delta=0.0,
                 business_priority=0.5,
             )
-            queue.append({"query": row.get("query"), "opportunity_score": scored["score"], "components": scored["components"]})
+            queue.append(
+                {
+                    "query": row.get("query"),
+                    "opportunity_score": scored["score"],
+                    "components": scored["components"],
+                }
+            )
         queue.sort(key=lambda item: item["opportunity_score"], reverse=True)
-        return {"queue": queue, "quick_wins": [q for q in queue if q["opportunity_score"] >= 60][:10]}
+        return {
+            "queue": queue,
+            "quick_wins": [q for q in queue if q["opportunity_score"] >= 60][:10],
+        }

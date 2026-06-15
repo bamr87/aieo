@@ -20,6 +20,8 @@ class AuditRequest(BaseModel):
     url: Optional[str] = None
     content: Optional[str] = None
     format: str = "markdown"
+    provider: Optional[str] = None
+    model: Optional[str] = None
 
 
 @router.post("/aieo/audit")
@@ -45,6 +47,8 @@ async def audit_content(
             content=request.content,
             format=request.format,
             db=db,
+            provider=request.provider,
+            model=request.model,
         )
         return result
     except ValueError as e:

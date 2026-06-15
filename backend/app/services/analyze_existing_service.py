@@ -37,7 +37,9 @@ class AnalyzeExistingService:
             content = self.workspace.read_file(target)["content"]
             fmt = "markdown"
         score = self.scoring_engine.score(content, format=fmt)
-        prompt_item = self.prompt_loader.get_collection_item("commands", "analyze-existing")
+        prompt_item = self.prompt_loader.get_collection_item(
+            "commands", "analyze-existing"
+        )
         base_prompt = prompt_item["body"] if prompt_item else "Analyze this content."
         prompt = f"{base_prompt}\n\nScoring snapshot:\n{score}\n\nReturn JSON only."
         try:

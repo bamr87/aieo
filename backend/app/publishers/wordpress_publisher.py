@@ -10,9 +10,14 @@ from ..core.config import settings
 
 
 class WordPressPublisher:
-    async def publish(self, title: str, content: str, metadata: Optional[Dict] = None) -> Dict:
+    async def publish(
+        self, title: str, content: str, metadata: Optional[Dict] = None
+    ) -> Dict:
         if not (settings.WP_URL and settings.WP_USERNAME and settings.WP_APP_PASSWORD):
-            return {"published": False, "message": "WordPress credentials not configured"}
+            return {
+                "published": False,
+                "message": "WordPress credentials not configured",
+            }
         endpoint = f"{settings.WP_URL.rstrip('/')}/wp-json/wp/v2/posts"
         payload = {
             "title": title,

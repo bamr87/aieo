@@ -8,7 +8,8 @@ evaluates content contextually, replacing hardcoded regex pattern matching.
 Supports:
 - OpenAI (GPT-4, GPT-4o, etc.)
 - Anthropic (Claude 3.5, Claude 3, etc.)
-- Heuristic fallback when no API key is configured
+- Claude Code CLI via OAuth (provider="claude-cli", no API key needed)
+- Heuristic fallback when no provider is configured
 """
 
 import json
@@ -66,6 +67,31 @@ class ScoringEngine:
 
     def _resolve_config(self):
         """Resolve provider/key/model from environment if not explicitly set."""
+        # Opt into the Claude Code CLI (OAuth) provider via env when nothing
+        # else was passed in, e.g. AIEO_PROVIDER=claude-cli.
+        if not self.provider and not self.api_key:
+            env_provider = os.environ.get("AIEO_PROVIDER")
+            if env_provider:
+                self.provider = env_provider
+
+        if self.provider:
+            self.provider = self._normalize_provider(self.provider)
+
+        # Explicitly forced heuristic (offline) scoring — never call AI even if
+        # the server has a provider key configured.
+        if self.provider == "heuristic":
+            self.provider = None
+            self.api_key = None
+            return
+
+        # The Claude Code CLI authenticates over OAuth through the `claude`
+        # binary, so it needs no API key. Resolve only the model and return.
+        if self.provider == "claude_cli":
+            self.model = (
+                self.model or os.environ.get("AIEO_CLAUDE_CLI_MODEL") or "sonnet"
+            )
+            return
+
         if self.api_key:
             if not self.provider:
                 self.provider = self._detect_provider(self.api_key)
@@ -74,6 +100,7 @@ class ScoringEngine:
         # Try loading from the app's config module
         try:
             from ..core.config import settings
+
             if settings.OPENAI_API_KEY:
                 self.api_key = settings.OPENAI_API_KEY
                 self.provider = self.provider or "openai"
@@ -87,7 +114,9 @@ class ScoringEngine:
 
         # Try environment variables directly
         if not self.api_key:
-            self.api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+            self.api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get(
+                "ANTHROPIC_API_KEY"
+            )
             if self.api_key:
                 if os.environ.get("OPENAI_API_KEY"):
                     self.provider = self.provider or "openai"
@@ -103,11 +132,38 @@ class ScoringEngine:
             return "anthropic"
         return "openai"
 
+    @staticmethod
+    def _normalize_provider(provider: str) -> str:
+        """Normalize provider aliases to a canonical name.
+
+        The Claude Code CLI (OAuth) provider accepts several friendly spellings;
+        they all canonicalize to ``claude_cli``.
+        """
+        canonical = provider.strip().lower().replace("-", "_")
+        if canonical in {
+            "claude_cli",
+            "claude_code",
+            "claude_code_cli",
+            "claudecli",
+            "cli",
+            "oauth",
+            "claude_oauth",
+        }:
+            return "claude_cli"
+        if canonical in {"heuristic", "none", "off", "offline"}:
+            return "heuristic"
+        return canonical
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
-    def score(self, content: str, format: str = "markdown", screenshot_b64: Optional[str] = None) -> Dict:
+    def score(
+        self,
+        content: str,
+        format: str = "markdown",
+        screenshot_b64: Optional[str] = None,
+    ) -> Dict:
         """Score content and return comprehensive results.
 
         If an AI API key is configured, uses the AI model to evaluate
@@ -125,7 +181,11 @@ class ScoringEngine:
         """
         parsed = self.parser.parse(content, format)
 
-        if self.api_key and self.provider:
+        # The Claude Code CLI provider authenticates via OAuth and needs no key;
+        # every other AI provider requires an API key.
+        ai_ready = self.provider == "claude_cli" or bool(self.api_key and self.provider)
+
+        if ai_ready:
             try:
                 return self._score_with_ai(parsed, screenshot_b64=screenshot_b64)
             except Exception as e:
@@ -138,7 +198,9 @@ class ScoringEngine:
     # AI-driven scoring
     # ------------------------------------------------------------------
 
-    def _score_with_ai(self, parsed: Dict, screenshot_b64: Optional[str] = None) -> Dict:
+    def _score_with_ai(
+        self, parsed: Dict, screenshot_b64: Optional[str] = None
+    ) -> Dict:
         """Score content using an AI model with prompt-defined criteria."""
         system_prompt = self.prompt_loader.load_system_prompt()
         user_prompt = self.prompt_loader.build_evaluation_prompt(parsed)
@@ -146,21 +208,29 @@ class ScoringEngine:
         if screenshot_b64:
             user_prompt += "\n\n## Screenshot\n\nA screenshot of the live page is attached. Use it to evaluate visual layout, design quality, information hierarchy, readability, and UX signals that affect AI citability. Include a `visual_analysis` section in your response."
 
-        raw_response = self._call_ai(system_prompt, user_prompt, screenshot_b64=screenshot_b64)
+        raw_response = self._call_ai(
+            system_prompt, user_prompt, screenshot_b64=screenshot_b64
+        )
         ai_result = self._parse_ai_response(raw_response)
 
         return self._build_result(ai_result, parsed)
 
-    def _call_ai(self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None) -> str:
+    def _call_ai(
+        self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None
+    ) -> str:
         """Call the AI model and return the raw response text."""
         if self.provider == "openai":
             return self._call_openai(system_prompt, user_prompt, screenshot_b64)
         elif self.provider == "anthropic":
             return self._call_anthropic(system_prompt, user_prompt, screenshot_b64)
+        elif self.provider == "claude_cli":
+            return self._call_claude_cli(system_prompt, user_prompt, screenshot_b64)
         else:
             raise ValueError(f"Unknown AI provider: {self.provider}")
 
-    def _call_openai(self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None) -> str:
+    def _call_openai(
+        self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None
+    ) -> str:
         """Call OpenAI API (sync), with optional vision input."""
         from openai import OpenAI
 
@@ -169,13 +239,15 @@ class ScoringEngine:
         # Build user message content — text + optional image
         user_content: list = [{"type": "text", "text": user_prompt}]
         if screenshot_b64:
-            user_content.append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/png;base64,{screenshot_b64}",
-                    "detail": "high",
-                },
-            })
+            user_content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{screenshot_b64}",
+                        "detail": "high",
+                    },
+                }
+            )
 
         response = client.chat.completions.create(
             model=self.model or "gpt-5.4",
@@ -189,7 +261,9 @@ class ScoringEngine:
         )
         return response.choices[0].message.content
 
-    def _call_anthropic(self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None) -> str:
+    def _call_anthropic(
+        self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None
+    ) -> str:
         """Call Anthropic API (sync), with optional vision input."""
         from anthropic import Anthropic
 
@@ -198,14 +272,16 @@ class ScoringEngine:
         # Build user message content — text + optional image
         user_content: list = [{"type": "text", "text": user_prompt}]
         if screenshot_b64:
-            user_content.append({
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": "image/png",
-                    "data": screenshot_b64,
-                },
-            })
+            user_content.append(
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/png",
+                        "data": screenshot_b64,
+                    },
+                }
+            )
 
         message = client.messages.create(
             model=self.model or "claude-sonnet-4-20250514",
@@ -216,6 +292,24 @@ class ScoringEngine:
             ],
         )
         return message.content[0].text
+
+    def _call_claude_cli(
+        self, system_prompt: str, user_prompt: str, screenshot_b64: Optional[str] = None
+    ) -> str:
+        """Call the locally authenticated Claude Code CLI (OAuth, no API key).
+
+        Vision input is not supported through the CLI, so a screenshot — if
+        provided — is ignored and the content is scored as text.
+        """
+        from .claude_cli import run_claude_cli
+
+        if screenshot_b64:
+            logger.info(
+                "Claude CLI provider does not support screenshot vision; scoring text only."
+            )
+        return run_claude_cli(
+            user_prompt, system_prompt=system_prompt, model=self.model
+        )
 
     def _parse_ai_response(self, raw: str) -> Dict:
         """Parse the AI's JSON response, handling common formatting issues."""
@@ -267,7 +361,9 @@ class ScoringEngine:
             m = data["max"]
             if m > 0:
                 weighted_sum += (data["score"] / m) * w
-        normalized = round((weighted_sum / total_weight) * 100, 1) if total_weight > 0 else 0
+        normalized = (
+            round((weighted_sum / total_weight) * 100, 1) if total_weight > 0 else 0
+        )
 
         anti = ai_result.get("anti_patterns", {})
         anti_penalty = min(50, anti.get("penalties", 0))
@@ -323,17 +419,21 @@ class ScoringEngine:
 
                 recommendation = data.get("recommendation", "")
                 if not recommendation:
-                    recommendation = f"Improve {name.replace('_', ' ')} to increase score."
+                    recommendation = (
+                        f"Improve {name.replace('_', ' ')} to increase score."
+                    )
 
-                gaps.append({
-                    "id": f"gap_{name}",
-                    "category": name,
-                    "severity": severity,
-                    "description": recommendation,
-                    "pattern_score": data["score"],
-                    "pattern_max": max_s,
-                    "weight": weight,
-                })
+                gaps.append(
+                    {
+                        "id": f"gap_{name}",
+                        "category": name,
+                        "severity": severity,
+                        "description": recommendation,
+                        "pattern_score": data["score"],
+                        "pattern_max": max_s,
+                        "weight": weight,
+                    }
+                )
 
         severity_order = {"high": 0, "medium": 1, "low": 2}
         gaps.sort(key=lambda g: (severity_order.get(g["severity"], 3), -g["weight"]))
@@ -367,7 +467,6 @@ class ScoringEngine:
         """
         patterns = self.prompt_loader.load_patterns()
         pattern_weights = {p["name"]: p["weight"] for p in patterns}
-        pattern_maxes = {p["name"]: p["max_score"] for p in patterns}
 
         pattern_scores = {}
         for p in patterns:
@@ -377,8 +476,11 @@ class ScoringEngine:
                 pattern_scores[name] = scorer(parsed, p["max_score"])
             else:
                 pattern_scores[name] = {
-                    "score": 0, "max": p["max_score"], "detected": False,
-                    "evidence": [], "recommendation": f"Configure AI API key for {name} scoring.",
+                    "score": 0,
+                    "max": p["max_score"],
+                    "detected": False,
+                    "evidence": [],
+                    "recommendation": f"Configure AI API key for {name} scoring.",
                 }
 
         total_weight = sum(pattern_weights.values())
@@ -388,7 +490,9 @@ class ScoringEngine:
             m = data["max"]
             if m > 0:
                 weighted_sum += (data["score"] / m) * w
-        normalized = round((weighted_sum / total_weight) * 100, 1) if total_weight > 0 else 0
+        normalized = (
+            round((weighted_sum / total_weight) * 100, 1) if total_weight > 0 else 0
+        )
 
         anti_penalty = _heuristic_anti_patterns(parsed)
         final_score = max(0, normalized - anti_penalty)
@@ -449,44 +553,92 @@ class ScoringEngine:
 # Heuristic scorer functions (module-level, stateless)
 # ======================================================================
 
+
 def _h_structured_data(parsed: Dict, max_score: int) -> Dict:
     wc = parsed["word_count"] or 1
-    t, l, h = len(parsed["tables"]), len(parsed["lists"]), len(parsed["headers"])
-    density = ((t + l + h) / wc) * 500
+    t, li, h = len(parsed["tables"]), len(parsed["lists"]), len(parsed["headers"])
+    density = ((t + li + h) / wc) * 500
     score = min(max_score, (density / 2) * max_score)
-    return {"score": round(score, 1), "max": max_score, "detected": density >= 1,
-            "evidence": [f"{t} tables, {l} lists, {h} headers"],
-            "recommendation": "Add tables or lists to organize your content."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": density >= 1,
+        "evidence": [f"{t} tables, {li} lists, {h} headers"],
+        "recommendation": "Add tables or lists to organize your content.",
+    }
 
 
 def _h_entity_density(parsed: Dict, max_score: int) -> Dict:
     text, wc = parsed["text"], parsed["word_count"] or 1
     caps = set(re.findall(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b", text))
     acros = set(re.findall(r"\b[A-Z]{2,6}\b", text))
-    stops = {"THE", "AND", "FOR", "BUT", "NOT", "YOU", "ALL", "CAN", "HER", "WAS",
-             "ONE", "OUR", "OUT", "ARE", "HAS", "HIS", "HOW", "ITS", "FROM", "WITH",
-             "THIS", "THAT", "HAVE", "WILL", "WHAT", "WHEN"}
+    stops = {
+        "THE",
+        "AND",
+        "FOR",
+        "BUT",
+        "NOT",
+        "YOU",
+        "ALL",
+        "CAN",
+        "HER",
+        "WAS",
+        "ONE",
+        "OUR",
+        "OUT",
+        "ARE",
+        "HAS",
+        "HIS",
+        "HOW",
+        "ITS",
+        "FROM",
+        "WITH",
+        "THIS",
+        "THAT",
+        "HAVE",
+        "WILL",
+        "WHAT",
+        "WHEN",
+    }
     ents = {e for e in (caps | acros) if e.upper() not in stops and len(e) > 1}
     per100 = (len(ents) / wc) * 100
     score = min(max_score, (per100 / 3) * max_score)
-    return {"score": round(score, 1), "max": max_score, "detected": per100 >= 1,
-            "evidence": [f"{len(ents)} entities ({round(per100, 1)} per 100 words)"],
-            "recommendation": "Add specific names, organizations, and product references."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": per100 >= 1,
+        "evidence": [f"{len(ents)} entities ({round(per100, 1)} per 100 words)"],
+        "recommendation": "Add specific names, organizations, and product references.",
+    }
 
 
 def _h_citation_hooks(parsed: Dict, max_score: int) -> Dict:
     text = parsed["text"].lower()
-    pats = [r"according to\b", r"research (?:from|by)\b", r"study (?:found|shows)\b",
-            r"source:", r"references?:", r"published (?:by|in)\b"]
+    pats = [
+        r"according to\b",
+        r"research (?:from|by)\b",
+        r"study (?:found|shows)\b",
+        r"source:",
+        r"references?:",
+        r"published (?:by|in)\b",
+    ]
     count = sum(len(re.findall(p, text)) for p in pats)
-    ext = [l for l in parsed.get("links", []) if l.get("url", "").startswith(("http://", "https://"))]
+    ext = [
+        lnk
+        for lnk in parsed.get("links", [])
+        if lnk.get("url", "").startswith(("http://", "https://"))
+    ]
     count += len(ext)
     wc = parsed["word_count"] or 1
     per1k = (count / wc) * 1000
     score = min(max_score, (per1k / 2) * max_score)
-    return {"score": round(score, 1), "max": max_score, "detected": count > 0,
-            "evidence": [f"{count} citation signals ({len(ext)} external links)"],
-            "recommendation": "Add source attributions like 'According to [source]...'"}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": count > 0,
+        "evidence": [f"{count} citation signals ({len(ext)} external links)"],
+        "recommendation": "Add source attributions like 'According to [source]...'",
+    }
 
 
 def _h_recursive_depth(parsed: Dict, max_score: int) -> Dict:
@@ -494,9 +646,13 @@ def _h_recursive_depth(parsed: Dict, max_score: int) -> Dict:
     qs = re.findall(r"[^.!?\n]+\?", text)
     qh = [h for h in parsed["headers"] if "?" in h["text"]]
     score = min(max_score, len(qs) * 0.5 + len(qh) * 2.5)
-    return {"score": round(score, 1), "max": max_score, "detected": len(qs) > 0,
-            "evidence": [f"{len(qs)} questions, {len(qh)} question headers"],
-            "recommendation": "Add FAQ sections or question-style headers."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": len(qs) > 0,
+        "evidence": [f"{len(qs)} questions, {len(qh)} question headers"],
+        "recommendation": "Add FAQ sections or question-style headers.",
+    }
 
 
 def _h_temporal_anchoring(parsed: Dict, max_score: int) -> Dict:
@@ -505,59 +661,88 @@ def _h_temporal_anchoring(parsed: Dict, max_score: int) -> Dict:
     fresh = re.findall(r"(?:as of|updated|version\s+\d)", text, re.IGNORECASE)
     count = len(years) + len(fresh)
     score = min(max_score, count * 2)
-    return {"score": round(score, 1), "max": max_score, "detected": count > 0,
-            "evidence": [f"{len(years)} year references, {len(fresh)} freshness signals"],
-            "recommendation": "Add dates, version numbers, or 'as of [date]' markers."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": count > 0,
+        "evidence": [f"{len(years)} year references, {len(fresh)} freshness signals"],
+        "recommendation": "Add dates, version numbers, or 'as of [date]' markers.",
+    }
 
 
 def _h_comparison_tables(parsed: Dict, max_score: int) -> Dict:
     t = parsed["tables"]
     score = min(max_score, len(t) * 5)
-    return {"score": round(score, 1), "max": max_score, "detected": len(t) > 0,
-            "evidence": [f"{len(t)} tables found"],
-            "recommendation": "Add comparison tables for key topics."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": len(t) > 0,
+        "evidence": [f"{len(t)} tables found"],
+        "recommendation": "Add comparison tables for key topics.",
+    }
 
 
 def _h_definitional_precision(parsed: Dict, max_score: int) -> Dict:
     text = parsed["text"]
     defs = re.findall(r"(?:is defined as|refers to|means that)\b", text, re.IGNORECASE)
     score = min(max_score, len(defs) * 3)
-    return {"score": round(score, 1), "max": max_score, "detected": len(defs) > 0,
-            "evidence": [f"{len(defs)} definitional phrases"],
-            "recommendation": "Add explicit definitions for key terms."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": len(defs) > 0,
+        "evidence": [f"{len(defs)} definitional phrases"],
+        "recommendation": "Add explicit definitions for key terms.",
+    }
 
 
 def _h_procedural_clarity(parsed: Dict, max_score: int) -> Dict:
     text = parsed["text"]
     steps = re.findall(r"step\s+\d+", text, re.IGNORECASE)
-    ordered = [l for l in parsed["lists"] if l["type"] == "ordered"]
+    ordered = [li for li in parsed["lists"] if li["type"] == "ordered"]
     score = min(max_score, len(steps) * 0.5 + len(ordered) * 1)
-    return {"score": round(score, 1), "max": max_score,
-            "detected": len(steps) > 0 or len(ordered) > 0,
-            "evidence": [f"{len(steps)} step refs, {len(ordered)} ordered lists"],
-            "recommendation": "Add numbered step-by-step instructions."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": len(steps) > 0 or len(ordered) > 0,
+        "evidence": [f"{len(steps)} step refs, {len(ordered)} ordered lists"],
+        "recommendation": "Add numbered step-by-step instructions.",
+    }
 
 
 def _h_faq_injection(parsed: Dict, max_score: int) -> Dict:
     text = parsed["text"].lower()
-    has_faq = bool(re.search(r"(?:frequently asked questions|faq|common questions)", text))
+    has_faq = bool(
+        re.search(r"(?:frequently asked questions|faq|common questions)", text)
+    )
     qh = [h for h in parsed["headers"] if "?" in h["text"]]
     score = min(max_score, (8 if has_faq else 0) + min(4, len(qh)))
-    return {"score": round(score, 1), "max": max_score,
-            "detected": has_faq or len(qh) > 0,
-            "evidence": [f"FAQ section: {'yes' if has_faq else 'no'}, {len(qh)} question headers"],
-            "recommendation": "Add a FAQ section with common questions."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": has_faq or len(qh) > 0,
+        "evidence": [
+            f"FAQ section: {'yes' if has_faq else 'no'}, {len(qh)} question headers"
+        ],
+        "recommendation": "Add a FAQ section with common questions.",
+    }
 
 
 def _h_meta_context(parsed: Dict, max_score: int) -> Dict:
     text = parsed["text"].lower()
-    pats = [r"this (?:is |matters? )(?:important|critical|crucial) because",
-            r"significantly", r"essential"]
+    pats = [
+        r"this (?:is |matters? )(?:important|critical|crucial) because",
+        r"significantly",
+        r"essential",
+    ]
     count = sum(len(re.findall(p, text)) for p in pats)
     score = min(max_score, count * 2)
-    return {"score": round(score, 1), "max": max_score, "detected": count > 0,
-            "evidence": [f"{count} meta-context signals"],
-            "recommendation": "Explain why your content matters to the reader."}
+    return {
+        "score": round(score, 1),
+        "max": max_score,
+        "detected": count > 0,
+        "evidence": [f"{count} meta-context signals"],
+        "recommendation": "Explain why your content matters to the reader.",
+    }
 
 
 _HEURISTIC_SCORERS = {
@@ -581,7 +766,11 @@ def _heuristic_anti_patterns(parsed: Dict) -> int:
     wc = parsed["word_count"]
 
     if wc > 0:
-        density = (len(parsed["tables"]) + len(parsed["lists"]) + len(parsed["headers"])) / wc * 1000
+        density = (
+            (len(parsed["tables"]) + len(parsed["lists"]) + len(parsed["headers"]))
+            / wc
+            * 1000
+        )
         if density > 10:
             penalties += 20
 

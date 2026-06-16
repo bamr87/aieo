@@ -5,7 +5,7 @@ works without external dependencies. AI-driven scoring is tested
 separately with integration tests.
 """
 
-from app.services.scoring_engine import ScoringEngine
+from app.services.scoring_engine import ScoringEngine, _heuristic_anti_patterns
 from app.services.prompt_loader import PromptLoader
 
 
@@ -128,3 +128,24 @@ def test_result_has_new_fields():
     for name, data in result["pattern_scores"].items():
         assert "evidence" in data
         assert "recommendation" in data
+
+
+def test_density_anti_pattern_spares_rich_content():
+    """The structural-density anti-pattern should penalize a thin skeleton
+    (lots of structure, little prose), not legitimately rich content."""
+    rich = {
+        "text": " ".join(f"word{i % 50}" for i in range(400)),
+        "word_count": 400,
+        "tables": [{}],
+        "lists": [{}, {}],
+        "headers": [{}, {}, {}],  # 6 elements / 400 words = ~67 words/element
+    }
+    skeleton = {
+        "text": "a b c d e f g h i j",
+        "word_count": 10,
+        "tables": [],
+        "lists": [{}, {}, {}],
+        "headers": [{}, {}, {}],  # 6 elements / 10 words = ~1.7 words/element
+    }
+    assert _heuristic_anti_patterns(rich) == 0
+    assert _heuristic_anti_patterns(skeleton) >= 20

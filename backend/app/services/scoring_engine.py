@@ -766,12 +766,16 @@ def _heuristic_anti_patterns(parsed: Dict) -> int:
     wc = parsed["word_count"]
 
     if wc > 0:
-        density = (
-            (len(parsed["tables"]) + len(parsed["lists"]) + len(parsed["headers"]))
-            / wc
-            * 1000
-        )
-        if density > 10:
+        # "Structure without substance": many headers/lists/tables with very
+        # little prose backing each one — a skeleton, table-of-contents dump,
+        # or keyword-stuffed page. Rich, well-organized content (which has plenty
+        # of words per structural element) is NOT penalized here — it is rewarded
+        # by the structure patterns instead. The previous check penalized any
+        # density > 10 (i.e. fewer than 100 words per element), which wrongly
+        # punished legitimately well-structured reference content and even
+        # full-page audits that include site navigation/footer chrome.
+        elements = len(parsed["tables"]) + len(parsed["lists"]) + len(parsed["headers"])
+        if elements > 0 and (wc / elements) < 8:
             penalties += 20
 
     words = text.split()

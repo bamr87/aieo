@@ -5,7 +5,11 @@ works without external dependencies. AI-driven scoring is tested
 separately with integration tests.
 """
 
-from app.services.scoring_engine import ScoringEngine, _heuristic_anti_patterns
+from app.services.scoring_engine import (
+    ScoringEngine,
+    _heuristic_anti_patterns,
+    _h_faq_injection,
+)
 from app.services.prompt_loader import PromptLoader
 
 
@@ -149,3 +153,15 @@ def test_density_anti_pattern_spares_rich_content():
     }
     assert _heuristic_anti_patterns(rich) == 0
     assert _heuristic_anti_patterns(skeleton) >= 20
+
+
+def test_faq_injection_reaches_max_for_substantive_faq():
+    """A substantive FAQ (a section plus several question headers) can earn the
+    full weight; a token FAQ heading alone stays mid-range."""
+    substantive = {
+        "text": "frequently asked questions about our services",
+        "headers": [{"text": f"Question {i}?"} for i in range(8)],
+    }
+    token = {"text": "frequently asked questions", "headers": []}
+    assert _h_faq_injection(substantive, 15)["score"] == 15
+    assert _h_faq_injection(token, 15)["score"] == 8

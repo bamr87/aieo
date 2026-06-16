@@ -715,7 +715,10 @@ def _h_faq_injection(parsed: Dict, max_score: int) -> Dict:
         re.search(r"(?:frequently asked questions|faq|common questions)", text)
     )
     qh = [h for h in parsed["headers"] if "?" in h["text"]]
-    score = min(max_score, (8 if has_faq else 0) + min(4, len(qh)))
+    # 8 for an FAQ section + up to 7 for question-style headers, so a substantive
+    # FAQ (an FAQ section plus several Q&A headers) can reach the full weight;
+    # a token FAQ heading alone stays mid-range.
+    score = min(max_score, (8 if has_faq else 0) + min(7, len(qh)))
     return {
         "score": round(score, 1),
         "max": max_score,

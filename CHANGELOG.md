@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Site Snapshot**: crawl a Jekyll/static site into a cached, offline, multi-format copy (text/json/markdown/html/pdf/zip-bundle) for review, analysis, and backup. New `backend/app/services/site_snapshot/` package (`SiteSnapshotService`), standalone `crawl_site.py`, CLI `aieo crawl`, MCP tools `aieo_crawl_site`/`aieo_crawl_manifest`, and REST `POST /api/v1/aieo/snapshot` (+ manifest/export GETs). Jekyll-tuned discovery (sitemap.xml → feed.xml → robots.txt → link BFS), incremental conditional-GET caching (ETag/Last-Modified + content hashing), DNS-pinned SSRF guard, stdlib-only PDF writer, and offline tests. See `docs/SNAPSHOT.md`.
 - Workspace service and API (`/aieo/workspace/*`) with seeded context templates under `.aieo-workspace`
 - Content lifecycle endpoints (`/aieo/research`, `/aieo/write`, `/aieo/rewrite`, `/aieo/analyze-existing`, `/aieo/scrub`)
 - Landing and performance endpoints (`/aieo/landing/*`, `/aieo/priorities`, `/aieo/data/*`)

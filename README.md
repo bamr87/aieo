@@ -148,6 +148,27 @@ python run_audit.py [OPTIONS]
   --output DIR                    Output directory (default: auto temp dir)
 ```
 
+### Site Snapshot — offline copy of an entire site (No Backend Required)
+
+Crawl a Jekyll/static site into a cached, offline, multi-format copy for review,
+analysis, or backup. No API key, no AI — just `httpx + beautifulsoup4 + markdown
++ html2text` and the standard library.
+
+```bash
+# Crawl a site and write text/json/markdown/html/pdf + a zip bundle
+python crawl_site.py https://bashconsultants.com \
+    --formats text,json,markdown,html,pdf,bundle --output ./snapshot
+
+# Re-run later: only changed pages are re-fetched (HTTP 304 / content hash),
+# everything else is served from the on-disk cache.
+python crawl_site.py https://bashconsultants.com
+```
+
+Discovery is Jekyll-tuned (`sitemap.xml` → `feed.xml` → `robots.txt` → link
+following) and every page is cached so re-runs are incremental. Also available
+as `aieo crawl <url>`, the MCP tools `aieo_crawl_site` / `aieo_crawl_manifest`,
+and `POST /api/v1/aieo/snapshot`. See [docs/SNAPSHOT.md](docs/SNAPSHOT.md).
+
 ### MCP Integration (Agent Workflows)
 
 Configure AIEO as an MCP server in your AI tool:
@@ -234,8 +255,9 @@ aieo/
 │   │   └── tasks/                # Async task queue (Celery)
 │   └── tests/
 ├── frontend/                     # React + TypeScript dashboard
-├── cli/                          # Python CLI (aieo audit, aieo optimize)
+├── cli/                          # Python CLI (aieo audit, aieo optimize, aieo crawl)
 ├── run_audit.py                  # Standalone batch audit script
+├── crawl_site.py                 # Standalone site-snapshot crawler (offline copy of a site)
 ├── sites.txt                     # URL list for batch auditing
 ├── .vscode/mcp.json              # MCP server configuration
 └── docker-compose.yml
@@ -320,6 +342,7 @@ python -m backend.app.mcp_server
 - [API Reference](docs/API.md)
 - [CLI Guide](docs/CLI.md)
 - [AIEO Patterns](docs/PATTERNS.md)
+- [Site Snapshot](docs/SNAPSHOT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Development Guide](docs/DEVELOPMENT.md)
 - [Product Requirements](PRD-aieo.md)

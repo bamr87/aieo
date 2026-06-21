@@ -46,7 +46,11 @@ Each capability is a service class in `backend/app/services/` consumed by all th
 
 - **REST API** — `backend/app/main.py` mounts routers from `backend/app/api/v1/` under `/api/v1`: audit, optimize, citations, patterns, workspace, content. Lifecycle endpoints live in `content.py` under `/api/v1/aieo/*` (e.g. `/api/v1/aieo/research`, `/aieo/write`, `/aieo/publish/wordpress`). Async tasks use Celery (`backend/app/tasks/`).
 - **MCP server** — [backend/app/mcp_server.py](backend/app/mcp_server.py) exposes ~20 `aieo_*` tools (`aieo_score_content`, `aieo_audit_url`, `aieo_research`, `aieo_workspace_*`, etc.). Run with `python -m backend.app.mcp_server`. This is what Claude Desktop / Copilot call.
-- **CLI & standalone scripts** — `cli/aieo/` is a Click CLI (`audit`, `optimize`, `dashboard`). Repo-root `run_audit.py` (batch audit of URLs in `sites.txt`) and `generate_reports.py` run *without the full backend* — they import the scoring engine directly and work in heuristic mode with no API key.
+- **CLI & standalone scripts** — `cli/aieo/` is a Click CLI (`audit`, `optimize`, `dashboard`, `crawl`). Repo-root `run_audit.py` (batch audit of URLs in `sites.txt`), `crawl_site.py` (site snapshot — see below), and `generate_reports.py` run *without the full backend* — they import the relevant service directly and work in heuristic/offline mode with no API key.
+
+## Site snapshot (offline site copy)
+
+Separate from scoring: `backend/app/services/site_snapshot/` (package, public class `SiteSnapshotService`) crawls a Jekyll/static site into a cached, offline, multi-format copy for review/analysis/backup. Discovery is Jekyll-tuned (`sitemap.xml` → `feed.xml` → `robots.txt` → same-domain link BFS); every page is cached under `<workspace>/.cache/snapshots/<slug>/` with conditional GET (ETag/Last-Modified) + content hashing, so re-runs only re-fetch changed pages. Exports (text/json/markdown/html/pdf/bundle) all derive from one in-memory model in `model.py`; PDF has a pure-stdlib floor (`pdf_writer.py`, zero new deps) that upgrades to reportlab/Playwright if installed. Exposed on all surfaces: `crawl_site.py`, `aieo crawl`, MCP `aieo_crawl_site`/`aieo_crawl_manifest`, and `POST /api/v1/aieo/snapshot`. The SSRF guard lives in `fetcher.py` (do **not** rely on `core.validation.validate_url`, which does not block private hosts). Tests are fully offline in `backend/tests/test_site_snapshot.py`. See `docs/SNAPSHOT.md`.
 
 ## Frontend (`frontend/`)
 

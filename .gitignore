@@ -106,4 +106,7 @@ dist/
 build/
 *.egg-info/
 
+# AIEO runtime workspace (cache, snapshots, audits, drafts) — generated state
+.aieo-workspace/
+
 

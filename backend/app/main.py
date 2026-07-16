@@ -9,7 +9,7 @@ from .core.rate_limit import RateLimitMiddleware
 from .core.logging_config import setup_logging
 from .core.middleware import LoggingMiddleware
 from .core.health import router as health_router
-from .api.v1 import audit, optimize, citations, patterns, workspace, content
+from .api.v1 import audit, optimize, citations, patterns, workspace, content, snapshot
 
 # Configure logging
 logger = setup_logging()
@@ -69,6 +69,7 @@ app.include_router(citations.router, prefix=settings.API_V1_PREFIX, tags=["citat
 app.include_router(patterns.router, prefix=settings.API_V1_PREFIX, tags=["patterns"])
 app.include_router(workspace.router, prefix=settings.API_V1_PREFIX, tags=["workspace"])
 app.include_router(content.router, prefix=settings.API_V1_PREFIX, tags=["content"])
+app.include_router(snapshot.router, prefix=settings.API_V1_PREFIX, tags=["snapshot"])
 
 
 @app.get("/")

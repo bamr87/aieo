@@ -52,6 +52,7 @@ from app.services.rewrite_service import RewriteService
 from app.services.scrub_service import ScrubService
 from app.services.workspace_service import WorkspaceService
 from app.services.write_service import WriteService
+from app.services.site_snapshot import CrawlConfig, SiteSnapshotService
 from app.core.config import workspace_root
 
 
@@ -73,6 +74,7 @@ def create_mcp_server():
     publish_service = PublishService()
     agent_runner = AgentRunner()
     workspace_service = WorkspaceService(workspace_root())
+    snapshot_service = SiteSnapshotService()
 
     @server.list_tools()
     async def list_tools():
@@ -288,6 +290,60 @@ def create_mcp_server():
                     "required": ["path", "content"],
                 },
             ),
+            Tool(
+                name="aieo_crawl_site",
+                description=(
+                    "Crawl a Jekyll/static site into a cached, offline, multi-format "
+                    "snapshot (text/json/markdown/html/pdf/bundle). Discovers pages via "
+                    "sitemap.xml/feed.xml/robots.txt and link-following, caches every "
+                    "page so re-runs only re-fetch changed pages, and writes single-file "
+                    "exports. Returns a manifest with stats and output paths."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "base_url": {"type": "string"},
+                        "formats": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "text",
+                                    "json",
+                                    "markdown",
+                                    "html",
+                                    "pdf",
+                                    "bundle",
+                                ],
+                            },
+                        },
+                        "max_pages": {"type": "integer", "default": 200},
+                        "max_depth": {"type": "integer", "default": 6},
+                        "max_link_pages": {"type": "integer", "default": 200},
+                        "delay_seconds": {"type": "number", "default": 0.25},
+                        "ttl_seconds": {"type": "integer", "default": 0},
+                        "respect_robots": {"type": "boolean", "default": True},
+                        "use_cache": {"type": "boolean", "default": True},
+                        "include_external": {"type": "boolean", "default": False},
+                        "include_assets": {"type": "boolean", "default": False},
+                        "strip_boilerplate": {"type": "boolean", "default": True},
+                        "refresh": {"type": "boolean", "default": False},
+                    },
+                    "required": ["base_url"],
+                },
+            ),
+            Tool(
+                name="aieo_crawl_manifest",
+                description=(
+                    "Return the most recent cached snapshot manifest for a site slug "
+                    "(e.g. 'bashconsultants_com') without re-crawling."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {"site_slug": {"type": "string"}},
+                    "required": ["site_slug"],
+                },
+            ),
         ]
 
     @server.call_tool()
@@ -496,6 +552,44 @@ def create_mcp_server():
                 arguments.get("path", ""), arguments.get("content", "")
             )
             return [TextContent(type="text", text=json.dumps({"ok": True}, indent=2))]
+        elif name == "aieo_crawl_site":
+            import anyio
+
+            base_url = arguments.get("base_url", "")
+            if not base_url:
+                return [
+                    TextContent(
+                        type="text", text=json.dumps({"error": "base_url required"})
+                    )
+                ]
+            cfg = CrawlConfig.from_dict(arguments)
+            formats = arguments.get("formats")
+            # Crawl is synchronous, blocking I/O — run it off the event loop.
+            result = await anyio.to_thread.run_sync(
+                lambda: snapshot_service.snapshot(base_url, formats=formats, cfg=cfg)
+            )
+            return [
+                TextContent(type="text", text=json.dumps(result, indent=2, default=str))
+            ]
+        elif name == "aieo_crawl_manifest":
+            manifest = snapshot_service.load_manifest(arguments.get("site_slug", ""))
+            if manifest is None:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "error": "no snapshot found",
+                                "site_slug": arguments.get("site_slug"),
+                            }
+                        ),
+                    )
+                ]
+            return [
+                TextContent(
+                    type="text", text=json.dumps(manifest, indent=2, default=str)
+                )
+            ]
 
         return [
             TextContent(

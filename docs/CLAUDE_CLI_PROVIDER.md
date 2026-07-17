@@ -1,13 +1,8 @@
 # Claude Code CLI provider (OAuth)
 
-AIEO can score and optimize content through the **locally authenticated Claude
-Code CLI** instead of an `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`. The `claude`
-binary manages its own OAuth credentials, so no API key needs to live in AIEO
-config — if `claude` is installed and logged in, AIEO can use it.
+AIEO can score and optimize content through the **locally authenticated Claude Code CLI** instead of an `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`. The `claude` binary manages its own OAuth credentials, so no API key needs to live in AIEO config — if `claude` is installed and logged in, AIEO can use it.
 
-This is the `claude-cli` provider. It is accepted anywhere a provider is
-accepted (the scoring engine, `OptimizeService`, `tools.aieo_runner`,
-`run_audit.py`).
+This is the `claude-cli` provider. It is accepted anywhere a provider is accepted (the scoring engine, `OptimizeService`, `tools.aieo_runner`, `run_audit.py`).
 
 ## How it works
 
@@ -17,19 +12,15 @@ accepted (the scoring engine, `OptimizeService`, `tools.aieo_runner`,
 claude -p --output-format json --model <model> [--system-prompt <system>]
 ```
 
-with the prompt on stdin, and reads the model's text from the JSON `result`
-envelope. The same evaluation prompts that drive the OpenAI/Anthropic paths are
-sent to the CLI, so scoring output is at parity.
+with the prompt on stdin, and reads the model's text from the JSON `result` envelope. The same evaluation prompts that drive the OpenAI/Anthropic paths are sent to the CLI, so scoring output is at parity.
 
 - Selecting it: `provider="claude-cli"` (aliases: `claude_cli`, `claude-code`,
   `cli`, `oauth`) or `AIEO_PROVIDER=claude-cli` in the environment.
 - No API key is required.
 - Any failure (missing binary, auth/401, timeout, bad JSON) raises
-  `ClaudeCLIError`; the **scoring engine catches it and falls back to heuristic
-  scoring**, so an audit never hard-fails because the CLI is unavailable.
+`ClaudeCLIError`; the **scoring engine catches it and falls back to heuristic scoring**, so an audit never hard-fails because the CLI is unavailable.
 - **Vision is not supported** through the CLI — screenshots are ignored and
-  content is scored as text. Use the `anthropic`/`openai` providers for visual
-  analysis.
+content is scored as text. Use the `anthropic`/`openai` providers for visual analysis.
 
 ### Environment overrides
 
@@ -42,8 +33,7 @@ sent to the CLI, so scoring output is at parity.
 
 ## Validating against a content repo (e.g. zer0-mistakes)
 
-`tools.aieo_runner` discovers local markdown by glob and scores each file — no
-backend services, DB, or API key needed.
+`tools.aieo_runner` discovers local markdown by glob and scores each file — no backend services, DB, or API key needed.
 
 ```bash
 # from the aieo repo root
@@ -68,9 +58,7 @@ PYTHONPATH=backend python -m tools.aieo_runner \
   --output-dir aieo-artifacts/zer0-rewrite
 ```
 
-Each run writes `REPORT.md` plus per-file JSON under `results/`. Diff the
-heuristic and `claude-cli` reports to see how AI scoring differs from the
-offline heuristic.
+Each run writes `REPORT.md` plus per-file JSON under `results/`. Diff the heuristic and `claude-cli` reports to see how AI scoring differs from the offline heuristic.
 
 Batch URL audits accept the provider too:
 
@@ -86,8 +74,4 @@ If a run silently falls back to heuristic, confirm the CLI itself is authed:
 echo 'Reply with only: {"ok": true}' | claude -p --output-format json --model sonnet
 ```
 
-A `"result"` containing the JSON means OAuth is working. An
-`api_error_status: 401` means you need to log in (`claude` once interactively).
-Note: a fresh `claude -p` started from *inside* another Claude Code/agent
-session can 401 because it doesn't inherit the parent session's in-memory
-token — run the validation from a normal terminal.
+A `"result"` containing the JSON means OAuth is working. An `api_error_status: 401` means you need to log in (`claude` once interactively). Note: a fresh `claude -p` started from *inside* another Claude Code/agent session can 401 because it doesn't inherit the parent session's in-memory token — run the validation from a normal terminal.

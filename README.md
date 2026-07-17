@@ -1,8 +1,6 @@
 # AIEO — AI Engine Optimization
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![MCP Compatible](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/) [![MCP Compatible](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io/)
 
 **AIEO** is an AI-native analysis engine that scores, reviews, and optimizes website content for citability by AI engines — ChatGPT, Claude, Grok, Gemini, Perplexity, and others. It replaces traditional SEO thinking with a prompt-engineered, agent-orchestrated workflow where AI models evaluate your content the same way they would when deciding whether to cite it.
 
@@ -150,8 +148,7 @@ python run_audit.py [OPTIONS]
 
 ### Site Snapshot — offline copy of an entire site (No Backend Required)
 
-Crawl a Jekyll/static site into a cached, offline, multi-format copy for review,
-analysis, or backup. No API key, no AI — just `httpx + beautifulsoup4 + markdown
+Crawl a Jekyll/static site into a cached, offline, multi-format copy for review, analysis, or backup. No API key, no AI — just `httpx + beautifulsoup4 + markdown
 + html2text` and the standard library.
 
 ```bash
@@ -164,10 +161,7 @@ python crawl_site.py https://bashconsultants.com \
 python crawl_site.py https://bashconsultants.com
 ```
 
-Discovery is Jekyll-tuned (`sitemap.xml` → `feed.xml` → `robots.txt` → link
-following) and every page is cached so re-runs are incremental. Also available
-as `aieo crawl <url>`, the MCP tools `aieo_crawl_site` / `aieo_crawl_manifest`,
-and `POST /api/v1/aieo/snapshot`. See [docs/SNAPSHOT.md](docs/SNAPSHOT.md).
+Discovery is Jekyll-tuned (`sitemap.xml` → `feed.xml` → `robots.txt` → link following) and every page is cached so re-runs are incremental. Also available as `aieo crawl <url>`, the MCP tools `aieo_crawl_site` / `aieo_crawl_manifest`, and `POST /api/v1/aieo/snapshot`. See [docs/SNAPSHOT.md](docs/SNAPSHOT.md).
 
 ### MCP Integration (Agent Workflows)
 

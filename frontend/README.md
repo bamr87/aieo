@@ -15,10 +15,7 @@ cd backend && AIEO_HEADLESS=1 DATABASE_URL="sqlite:///./aieo_dev.db" REDIS_URL="
 cd frontend && npm install && npm run dev      # http://localhost:5173
 ```
 
-Then open the app, go to **Settings**, and set an API key — every backend endpoint
-requires an `X-API-Key` header. For local dev, click **“Use dev key”** (any 11+ char
-string is accepted by the simple verifier). The base URL defaults to
-`http://localhost:8000/api/v1`; override with `VITE_API_BASE_URL` in `.env.local`.
+Then open the app, go to **Settings**, and set an API key — every backend endpoint requires an `X-API-Key` header. For local dev, click **“Use dev key”** (any 11+ char string is accepted by the simple verifier). The base URL defaults to `http://localhost:8000/api/v1`; override with `VITE_API_BASE_URL` in `.env.local`.
 
 ## What's here
 

@@ -137,16 +137,14 @@ Use when: User specifies area (e.g., "focus on API docs" or "improve risk sectio
 | `MVP-Ready` | Scope clear, details sparse | Fill gaps, add precision |
 | `Execution-Ready` | Detailed, minor polish needed | Light touch, validate |
 
-**Identify Top Blockers:**
-List the 5-10 most critical gaps preventing buildability:
+**Identify Top Blockers:** List the 5-10 most critical gaps preventing buildability:
 - Missing success metrics?
 - Unclear scope boundaries?
 - No acceptance criteria?
 - Unidentified dependencies?
 - No risk assessment?
 
-**Determine Scope:**
-Based on maturity and blockers, determine which phases to prioritize.
+**Determine Scope:** Based on maturity and blockers, determine which phases to prioritize.
 
 ---
 
@@ -309,16 +307,12 @@ Based on maturity and blockers, determine which phases to prioritize.
 
 **Request:**
 ```json
-{
-  "field": "value"
-}
+{ "field": "value" }
 ```
 
 **Response (200):**
 ```json
-{
-  "result": "value"
-}
+{ "result": "value" }
 ```
 
 **Errors:**
@@ -361,11 +355,7 @@ Based on maturity and blockers, determine which phases to prioritize.
 ### Core Entities
 
 ```typescript
-interface EntityA {
-  id: string;           // UUID, primary key
-  field: string;        // Description
-  created_at: ISO8601;  // Immutable
-}
+interface EntityA { id: string;           // UUID, primary key field: string;        // Description created_at: ISO8601;  // Immutable }
 ```
 
 ### Data Retention

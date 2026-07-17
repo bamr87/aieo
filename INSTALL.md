@@ -161,8 +161,7 @@ venv\Scripts\activate  # Windows
 uvicorn app.main:app --reload
 ```
 
-Backend will be available at: http://localhost:8000
-API documentation: http://localhost:8000/docs
+Backend will be available at: http://localhost:8000 API documentation: http://localhost:8000/docs
 
 ### Start Frontend (in a new terminal)
 

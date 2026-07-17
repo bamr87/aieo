@@ -1,14 +1,8 @@
 # Site Snapshot
 
-The site snapshot feature crawls a Jekyll/static site and produces a
-**comprehensive, lightweight, offline copy of the entire site's content** — a
-single file (or a zip package) you can use for review, analysis, or backup. It
-is independent of the AIEO scoring engine: no API key, no database, no AI model.
+The site snapshot feature crawls a Jekyll/static site and produces a **comprehensive, lightweight, offline copy of the entire site's content** — a single file (or a zip package) you can use for review, analysis, or backup. It is independent of the AIEO scoring engine: no API key, no database, no AI model.
 
-Discovery is tuned for Jekyll (`sitemap.xml` → `feed.xml` → `robots.txt` →
-same-domain link following), every page is cached on disk so re-runs only
-re-download what changed, and the snapshot can be exported as **text, JSON,
-markdown, HTML, PDF, or a zip bundle**.
+Discovery is tuned for Jekyll (`sitemap.xml` → `feed.xml` → `robots.txt` → same-domain link following), every page is cached on disk so re-runs only re-download what changed, and the snapshot can be exported as **text, JSON, markdown, HTML, PDF, or a zip bundle**.
 
 ## Quick start
 
@@ -34,8 +28,7 @@ python crawl_site.py --sites sites.txt --formats html,json
 
 ## The four surfaces
 
-All four are thin wrappers over one service, `SiteSnapshotService`
-([backend/app/services/site_snapshot/](../backend/app/services/site_snapshot/)).
+All four are thin wrappers over one service, `SiteSnapshotService` ([backend/app/services/site_snapshot/](../backend/app/services/site_snapshot/)).
 
 | Surface | How |
 | --- | --- |
@@ -57,44 +50,26 @@ Every format is rendered from one in-memory model, so they stay consistent.
 | `pdf` | `.pdf` | ✓ | Pure-stdlib writer (zero new deps); upgrades to `reportlab`/Playwright automatically if installed |
 | `bundle` | `.zip` | ✓ (package) | A zip of html + markdown + json + text + README — the "package" deliverable |
 
-For a **fully offline** HTML/bundle that also embeds images, add
-`--include-assets` (images are downloaded, size-capped, and inlined as data
-URIs). Note this trades the "lightweight" goal for completeness: base64-inlining
-full-resolution images can produce a very large single file on image-heavy
-sites, so it is opt-in. Without it, the default HTML stays small (images are
-referenced by their absolute URL and load over the network).
+For a **fully offline** HTML/bundle that also embeds images, add `--include-assets` (images are downloaded, size-capped, and inlined as data URIs). Note this trades the "lightweight" goal for completeness: base64-inlining full-resolution images can produce a very large single file on image-heavy sites, so it is opt-in. Without it, the default HTML stays small (images are referenced by their absolute URL and load over the network).
 
 ## Content extraction (de-duplication)
 
-By default the snapshot records each page's **main content only** — it extracts
-from the page's main-content container (`<main>`, `[role=main]`, `<article>`,
-`#main-content`, `.page__content`, …) and strips nav, header, footer, sidebars,
-modals, cookie banners, and in-page tables-of-contents. Without this, a theme's
-chrome is repeated on every page: on a real Jekyll site that was **~56% of the
-total word count**. Main-content extraction cut it to **<1%** and roughly halved
-the HTML/JSON output.
+By default the snapshot records each page's **main content only** — it extracts from the page's main-content container (`<main>`, `[role=main]`, `<article>`, `#main-content`, `.page__content`, …) and strips nav, header, footer, sidebars, modals, cookie banners, and in-page tables-of-contents. Without this, a theme's chrome is repeated on every page: on a real Jekyll site that was **~56% of the total word count**. Main-content extraction cut it to **<1%** and roughly halved the HTML/JSON output.
 
-Each page records which container it used in `content_root` (e.g. `main`,
-`#main-content`, or `body` when no semantic container was found and the whole
-body minus landmarks is used). Pass `--full-page` (CLI/script) or
-`strip_boilerplate: false` (REST/MCP) to keep the full page chrome instead.
+Each page records which container it used in `content_root` (e.g. `main`, `#main-content`, or `body` when no semantic container was found and the whole body minus landmarks is used). Pass `--full-page` (CLI/script) or `strip_boilerplate: false` (REST/MCP) to keep the full page chrome instead.
 
-`content_hash` is always computed over the **raw** HTML (so caching/change
-detection is unaffected), while `text`/`word_count` reflect the extracted content.
+`content_hash` is always computed over the **raw** HTML (so caching/change detection is unaffected), while `text`/`word_count` reflect the extracted content.
 
 ## Caching
 
 - **Location:** `<workspace>/.cache/snapshots/<site_slug>/` — `pages/<key>.json`
-  sidecars + gzip raw bodies in `raw/`, plus `_manifest.json` (the last full
-  snapshot, served by the manifest endpoints with no crawl).
+sidecars + gzip raw bodies in `raw/`, plus `_manifest.json` (the last full snapshot, served by the manifest endpoints with no crawl).
 - **Conditional GET:** ETag / Last-Modified are stored verbatim and replayed as
   `If-None-Match` / `If-Modified-Since`. A `304` reuses the cached body.
 - **Content hashing:** when a server omits validators, a SHA-256 of the body
-  detects unchanged pages anyway. (This hash matches `ContentParser._hash_content`,
-  so the snapshot and the audit pipeline agree.)
+detects unchanged pages anyway. (This hash matches `ContentParser._hash_content`, so the snapshot and the audit pipeline agree.)
 - **Stale-on-error:** if a live fetch fails on a re-run, the previous cached body
-  is served and flagged `stale`; the snapshot is marked `degraded` if too many
-  pages are stale, so an outage never silently shrinks a backup.
+is served and flagged `stale`; the snapshot is marked `degraded` if too many pages are stale, so an outage never silently shrinks a backup.
 - **Flags:** `--refresh` ignores validators and re-fetches; `--no-cache` purges
   and rebuilds; `--ttl N` skips revalidation for entries younger than `N` seconds.
 
@@ -107,18 +82,12 @@ detection is unaffected), while `text`/`word_count` reflect the extracted conten
 4. Same-domain link BFS — always runs as a safety net (bounded by a separate
    `--max-link-pages` budget so it can't starve sitemap pages).
 
-URLs are normalized for stable cache identity (fragment dropped, scheme/host
-lowercased, default port and `index.html` stripped, duplicate slashes collapsed).
-Off-host links are recorded but not crawled unless `--include-external`.
-Pagination/tag/date-archive traps are skipped by default.
+URLs are normalized for stable cache identity (fragment dropped, scheme/host lowercased, default port and `index.html` stripped, duplicate slashes collapsed). Off-host links are recorded but not crawled unless `--include-external`. Pagination/tag/date-archive traps are skipped by default.
 
 ## Safety
 
 - **SSRF:** every request (including each redirect hop, which are followed
-  manually) is gated by a host guard that resolves the target via
-  `getaddrinfo` and rejects loopback/private/link-local/reserved addresses
-  (IPv4 **and** IPv6). Set `AIEO_SNAPSHOT_ALLOW_PRIVATE=1` to allow private hosts
-  (used by the offline test fixture).
+manually) is gated by a host guard that resolves the target via `getaddrinfo` and rejects loopback/private/link-local/reserved addresses (IPv4 **and** IPv6). Set `AIEO_SNAPSHOT_ALLOW_PRIVATE=1` to allow private hosts (used by the offline test fixture).
 - **Caps:** `--max-pages`, `--max-depth`, and a per-page byte cap bound every crawl.
 
 ## Key options
@@ -138,7 +107,4 @@ Pagination/tag/date-archive traps are skipped by default.
 
 ## Tests
 
-`backend/tests/test_site_snapshot.py` runs fully offline (a fixture Jekyll site
-served from `127.0.0.1` by `http.server`), with no network egress and no API
-key — covering discovery, robots, incremental 304 caching, stale-on-error, hash
-parity, every exporter, the stdlib PDF's structural validity, and the SSRF guard.
+`backend/tests/test_site_snapshot.py` runs fully offline (a fixture Jekyll site served from `127.0.0.1` by `http.server`), with no network egress and no API key — covering discovery, robots, incremental 304 caching, stale-on-error, hash parity, every exporter, the stdlib PDF's structural validity, and the SSRF guard.

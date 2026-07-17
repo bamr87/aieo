@@ -5,5 +5,4 @@ inputs: content,internal_links_map
 outputs: json
 model_hint: gpt-5.4
 ---
-Suggest strategic internal links with anchor text and placement.
-Return JSON with suggestions array.
+Suggest strategic internal links with anchor text and placement. Return JSON with suggestions array.

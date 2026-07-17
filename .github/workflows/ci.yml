@@ -3,12 +3,27 @@ name: CI
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - '.editorconfig'
+      - '.github/agents/**'
+      - 'docs/**'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - '.editorconfig'
+      - '.github/agents/**'
+      - 'docs/**'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     services:
       postgres:
@@ -36,13 +51,15 @@ jobs:
           - 6379:6379
     
     steps:
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v4
+
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
+        cache: pip
+        cache-dependency-path: backend/requirements.txt
+
     - name: Install dependencies
       run: |
         cd backend
@@ -59,21 +76,24 @@ jobs:
         pytest --cov=app --cov-report=xml
     
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
-        file: ./backend/coverage.xml
+        files: ./backend/coverage.xml
         flags: backend
 
   frontend-tests:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 10
+
     steps:
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v4
+
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: npm
+        cache-dependency-path: frontend/package-lock.json
     
     - name: Install dependencies
       run: |
@@ -97,14 +117,17 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 10
+
     steps:
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v4
+
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+        cache: pip
+        cache-dependency-path: backend/requirements.txt
     
     - name: Install linting tools
       run: |

@@ -37,7 +37,7 @@ jobs:
     # the archived actions/create-release@v1 fail on v0.1.0), it attaches
     # the artifacts to it instead of erroring.
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         body: |
           See CHANGELOG.md for details.

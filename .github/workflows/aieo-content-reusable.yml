@@ -74,10 +74,10 @@ jobs:
 
     steps:
       - name: Checkout AIEO (this workflow's repository)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout content repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ inputs.content_repository }}
           ref: ${{ inputs.content_ref }}
@@ -85,7 +85,7 @@ jobs:
           token: ${{ secrets.CONTENT_REPO_TOKEN || github.token }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ inputs.python_version }}
 
@@ -124,7 +124,7 @@ jobs:
 
       - name: Upload AIEO artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: aieo-artifacts
           path: content/aieo-artifacts/

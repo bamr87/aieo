@@ -131,7 +131,7 @@ jobs:
     
     - name: Install linting tools
       run: |
-        pip install black==25.11.0 ruff==0.15.4 mypy
+        pip install black ruff mypy
     
     - name: Check formatting
       run: |

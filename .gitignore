@@ -109,4 +109,7 @@ build/
 # AIEO runtime workspace (cache, snapshots, audits, drafts) — generated state
 .aieo-workspace/
 
+# Claude Code run-tool launch config (machine-generated)
+.claude/launch.json
+
 

@@ -9,7 +9,8 @@
 # Pinning the ruff *version* in CI would hide that, but the fleet dependency
 # policy is ALWAYS-LATEST — no version pins, no lockfiles (see
 # bamr87/bamr87 docs/DEPENDENCIES.md). So the rule set is pinned here, in
-# config, where it is reviewable and can only change on purpose.
+# config, where it is reviewable and can only change on purpose, and ruff
+# itself is free to float.
 #
 # `select` below reproduces ruff's pre-0.16 default, which this tree is known
 # to be clean against. Widening it is a deliberate cleanup, not an upgrade side

@@ -34,6 +34,23 @@ def _anchor(text: str) -> str:
     return _SLUG_RE.sub("-", (text or "").lower()).strip("-")
 
 
+# Elements that make a subtree an in-page tool rather than decoration.
+INTERACTIVE_TAGS = ("form", "input", "select", "textarea", "button", "canvas")
+_DEMO_HINT_RE = re.compile(
+    r"\b(demo|interactive|widget|playground|sandbox|calculator|simulator|"
+    r"visuali[sz]er|generator|editor)\b",
+    re.IGNORECASE,
+)
+
+
+def is_interactive_container(el) -> bool:
+    """Does this element hold an in-page tool (controls, or a demo-ish name)?"""
+    identity = " ".join((el.get("class") or []) + [el.get("id") or ""])
+    if _DEMO_HINT_RE.search(identity):
+        return True
+    return el.find(list(INTERACTIVE_TAGS)) is not None
+
+
 class PageExtractor:
     def __init__(self, parser: Optional[ContentParser] = None):
         self.parser = parser or ContentParser()
@@ -51,6 +68,7 @@ class PageExtractor:
         include_external: bool,
         record: PageRecord,
         strip_boilerplate: bool = True,
+        keep_interactive: bool = False,
     ) -> PageRecord:
         """Populate ``record`` (already carrying fetch metadata) from ``html``.
 
@@ -60,6 +78,13 @@ class PageExtractor:
         snapshot records each page's UNIQUE content, not the theme's chrome
         repeated on every page. Set ``strip_boilerplate=False`` for full-page
         fidelity.
+
+        ``keep_interactive`` preserves in-page tools — ``<form>`` subtrees and
+        the ``hidden`` containers that progressive-enhancement demos live in
+        until their script reveals them. Off by default (a snapshot wants prose),
+        on for context builds, where a page's calculator or live demo IS the
+        content: without it, a demo's controls, labels and tables are deleted
+        before extraction and the page reads as an empty section heading.
         """
         from bs4 import BeautifulSoup
 
@@ -73,7 +98,11 @@ class PageExtractor:
         # Choose + clean the content root.
         if strip_boilerplate:
             content_el, root_label = self._select_content_root(soup)
-            self._strip_chrome(content_el, drop_landmarks=(root_label == "body"))
+            self._strip_chrome(
+                content_el,
+                drop_landmarks=(root_label == "body"),
+                keep_interactive=keep_interactive,
+            )
             record.content_root = root_label
             content_html = str(content_el)
         else:
@@ -210,18 +239,27 @@ class PageExtractor:
                 return el, label
         return (soup.find("body") or soup), "body"
 
-    def _strip_chrome(self, root, *, drop_landmarks: bool) -> None:
+    def _strip_chrome(
+        self, root, *, drop_landmarks: bool, keep_interactive: bool = False
+    ) -> None:
         """Remove non-content elements from the chosen content root in place."""
         if root is None:
             return
         tags = list(self._DROP_TAGS)
         if drop_landmarks:
             tags += list(self._LANDMARK_TAGS)
+        if keep_interactive:
+            tags = [t for t in tags if t != "form"]
         for el in root.find_all(tags):
             el.decompose()
         for el in root.select(",".join(self._CHROME_SELECTORS)):
             el.decompose()
         for el in root.find_all(attrs={"hidden": True}):
+            # A hidden subtree is usually a modal or an off-screen scrap, but
+            # progressive-enhancement demos also ship hidden and are revealed by
+            # their script on load — those are content, so keep them.
+            if keep_interactive and is_interactive_container(el):
+                continue
             el.decompose()
         # Drop orphaned TOC heading labels left behind when the list was a sibling.
         for h in root.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):

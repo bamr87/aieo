@@ -163,6 +163,24 @@ python crawl_site.py https://bashconsultants.com
 
 Discovery is Jekyll-tuned (`sitemap.xml` → `feed.xml` → `robots.txt` → link following) and every page is cached so re-runs are incremental. Also available as `aieo crawl <url>`, the MCP tools `aieo_crawl_site` / `aieo_crawl_manifest`, and `POST /api/v1/aieo/snapshot`. See [docs/SNAPSHOT.md](docs/SNAPSHOT.md).
 
+### Site Context — crawl a URL N levels down into a contextual dataset
+
+Point it at any URL — typically a section index — and it maps the links and references N levels below it, extracts every page's content, metadata, SEO facts and presentation profile (styles, palette, typography, images, animation), then loops the pages through a **Claude Code agent over OAuth** (no API key) for per-page and site-level analysis.
+
+```bash
+# Map a category index and its item pages, two levels down
+python build_context.py https://www.nayuki.io/category/programming \
+    --depth 2 --formats json,markdown,html,mermaid
+
+# Phase 1 only: just the link/reference map
+python build_context.py https://example.com/docs --map-only
+
+# No Claude Code CLI installed? The build still completes in heuristic mode.
+python build_context.py https://example.com/blog --no-agent
+```
+
+Also available as `aieo context <url>`, the MCP tools `aieo_site_context` / `aieo_context_map` / `aieo_context_manifest`, and `POST /api/v1/aieo/context`. See [docs/SITE_CONTEXT.md](docs/SITE_CONTEXT.md).
+
 ### MCP Integration (Agent Workflows)
 
 Configure AIEO as an MCP server in your AI tool:
@@ -249,9 +267,10 @@ aieo/
 │   │   └── tasks/                # Async task queue (Celery)
 │   └── tests/
 ├── frontend/                     # React + TypeScript dashboard
-├── cli/                          # Python CLI (aieo audit, aieo optimize, aieo crawl)
+├── cli/                          # Python CLI (aieo audit, aieo optimize, aieo crawl, aieo context)
 ├── run_audit.py                  # Standalone batch audit script
 ├── crawl_site.py                 # Standalone site-snapshot crawler (offline copy of a site)
+├── build_context.py              # Standalone context builder (map + extract + Claude Code agent)
 ├── sites.txt                     # URL list for batch auditing
 ├── .vscode/mcp.json              # MCP server configuration
 └── docker-compose.yml
@@ -337,6 +356,7 @@ python -m backend.app.mcp_server
 - [CLI Guide](docs/CLI.md)
 - [AIEO Patterns](docs/PATTERNS.md)
 - [Site Snapshot](docs/SNAPSHOT.md)
+- [Site Context](docs/SITE_CONTEXT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Development Guide](docs/DEVELOPMENT.md)
 - [Product Requirements](PRD-aieo.md)

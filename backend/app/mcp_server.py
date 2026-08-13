@@ -53,6 +53,7 @@ from app.services.scrub_service import ScrubService
 from app.services.workspace_service import WorkspaceService
 from app.services.write_service import WriteService
 from app.services.site_snapshot import CrawlConfig, SiteSnapshotService
+from app.services.site_context import ContextConfig, SiteContextService
 from app.core.config import workspace_root
 
 
@@ -75,6 +76,7 @@ def create_mcp_server():
     agent_runner = AgentRunner()
     workspace_service = WorkspaceService(workspace_root())
     snapshot_service = SiteSnapshotService()
+    context_service = SiteContextService()
 
     @server.list_tools()
     async def list_tools():
@@ -333,6 +335,134 @@ def create_mcp_server():
                 },
             ),
             Tool(
+                name="aieo_site_context",
+                description=(
+                    "Crawl a URL and the pages N levels below it into a contextual "
+                    "dataset of the site. Three phases: (1) map every link and "
+                    "reference from the seed outward, (2) extract each page's "
+                    "content, metadata, SEO facts and presentation profile "
+                    "(styles, palette, typography, images, animation, and the "
+                    "interactive UI: demo controls, labels, file uploads), (3) loop the "
+                    "pages through a Claude Code agent over OAuth for per-page and "
+                    "site-level analysis (falls back to heuristics if the CLI is "
+                    "unavailable). Ideal on a section/index URL such as "
+                    "https://www.nayuki.io/category/programming. Returns stats, the "
+                    "context brief and paths to the exported dataset."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "seed_url": {"type": "string"},
+                        "depth": {"type": "integer", "default": 2},
+                        "scope": {
+                            "type": "string",
+                            "enum": ["host", "domain", "path"],
+                            "default": "host",
+                        },
+                        "formats": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["json", "markdown", "html", "mermaid"],
+                            },
+                        },
+                        "max_pages": {"type": "integer", "default": 150},
+                        "max_pages_per_level": {"type": "integer", "default": 80},
+                        "follow_sitemap": {"type": "boolean", "default": False},
+                        "include_external": {"type": "boolean", "default": False},
+                        "delay_seconds": {"type": "number", "default": 0.25},
+                        "ttl_seconds": {"type": "integer", "default": 0},
+                        "respect_robots": {"type": "boolean", "default": True},
+                        "use_cache": {"type": "boolean", "default": True},
+                        "refresh": {"type": "boolean", "default": False},
+                        "strip_boilerplate": {"type": "boolean", "default": True},
+                        "keep_interactive": {
+                            "type": "boolean",
+                            "default": True,
+                            "description": (
+                                "Keep in-page tools (forms, hidden demo containers) "
+                                "as content instead of stripping them as chrome"
+                            ),
+                        },
+                        "capture_presentation": {"type": "boolean", "default": True},
+                        "fetch_stylesheets": {"type": "boolean", "default": True},
+                        "fetch_scripts": {
+                            "type": "boolean",
+                            "default": True,
+                            "description": (
+                                "Fetch same-host JS so script-driven motion "
+                                "(rAF loops, canvas, scripted SVG) is detected"
+                            ),
+                        },
+                        "extractor": {
+                            "type": "string",
+                            "enum": ["auto", "builtin", "trafilatura"],
+                            "default": "auto",
+                        },
+                        "use_optional_libraries": {"type": "boolean", "default": True},
+                        "render": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": (
+                                "Execute JavaScript with Playwright and crawl the "
+                                "rendered DOM (slow; falls back to static fetches "
+                                "when Playwright is unavailable)"
+                            ),
+                        },
+                        "agent_enabled": {"type": "boolean", "default": True},
+                        "agent_model": {"type": "string"},
+                        "agent_max_pages": {"type": "integer", "default": 25},
+                        "agent_concurrency": {"type": "integer", "default": 3},
+                        "agent_synthesis": {"type": "boolean", "default": True},
+                        "map_only": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": "Stop after phase 1 (the link/reference map)",
+                        },
+                    },
+                    "required": ["seed_url"],
+                },
+            ),
+            Tool(
+                name="aieo_context_map",
+                description=(
+                    "Phase 1 only: map the links and references N levels below a URL "
+                    "without extracting content or calling the agent. Fast way to see "
+                    "the shape of a site section before committing to a full build."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "seed_url": {"type": "string"},
+                        "depth": {"type": "integer", "default": 2},
+                        "scope": {
+                            "type": "string",
+                            "enum": ["host", "domain", "path"],
+                            "default": "host",
+                        },
+                        "max_pages": {"type": "integer", "default": 150},
+                        "delay_seconds": {"type": "number", "default": 0.25},
+                        "respect_robots": {"type": "boolean", "default": True},
+                    },
+                    "required": ["seed_url"],
+                },
+            ),
+            Tool(
+                name="aieo_context_manifest",
+                description=(
+                    "Return a stored context dataset by site slug and context key "
+                    "(e.g. 'nayuki_io' + 'category-programming-4f3a1c2b') without "
+                    "re-crawling. Omit context_key to list every stored context."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "site_slug": {"type": "string"},
+                        "context_key": {"type": "string"},
+                    },
+                },
+            ),
+            Tool(
                 name="aieo_crawl_manifest",
                 description=(
                     "Return the most recent cached snapshot manifest for a site slug "
@@ -581,6 +711,68 @@ def create_mcp_server():
                             {
                                 "error": "no snapshot found",
                                 "site_slug": arguments.get("site_slug"),
+                            }
+                        ),
+                    )
+                ]
+            return [
+                TextContent(
+                    type="text", text=json.dumps(manifest, indent=2, default=str)
+                )
+            ]
+
+        elif name in ("aieo_site_context", "aieo_context_map"):
+            import anyio
+
+            seed_url = arguments.get("seed_url", "")
+            if not seed_url:
+                return [
+                    TextContent(
+                        type="text", text=json.dumps({"error": "seed_url required"})
+                    )
+                ]
+            try:
+                cfg = ContextConfig.from_dict(arguments)
+            except ValueError as exc:
+                return [TextContent(type="text", text=json.dumps({"error": str(exc)}))]
+            map_only = name == "aieo_context_map" or bool(arguments.get("map_only"))
+            formats = arguments.get("formats") or (
+                ["json", "mermaid"] if map_only else ["json", "markdown"]
+            )
+            # Crawl + agent calls are synchronous, blocking I/O — keep them off
+            # the event loop.
+            result = await anyio.to_thread.run_sync(
+                lambda: context_service.run(
+                    seed_url, formats=formats, cfg=cfg, map_only=map_only
+                )
+            )
+            return [
+                TextContent(type="text", text=json.dumps(result, indent=2, default=str))
+            ]
+        elif name == "aieo_context_manifest":
+            site_slug = arguments.get("site_slug", "")
+            context_key = arguments.get("context_key", "")
+            if not context_key:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"contexts": context_service.list_contexts()},
+                            indent=2,
+                            default=str,
+                        ),
+                    )
+                ]
+            manifest = context_service.load_manifest(site_slug, context_key)
+            if manifest is None:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "error": "no context found",
+                                "site_slug": site_slug,
+                                "context_key": context_key,
                             }
                         ),
                     )

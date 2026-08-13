@@ -291,6 +291,20 @@ class SiteSnapshotService:
             return record
 
         html = result.text
+
+        # Broken revalidation: some servers answer a conditional GET with an
+        # empty "200 OK" instead of "304 Not Modified". Taken at face value that
+        # replaces a good cached page with nothing, which is exactly the silent
+        # backup-shrinking this cache exists to prevent — so treat it as the 304
+        # it meant to be and keep serving the stored copy.
+        if conditional and entry and not html.strip():
+            cached_body = cache.read_body(url)
+            if cached_body:
+                new_fetched = _now_iso()
+                cache.update_fetched_at(url, new_fetched)
+                entry = {**entry, "fetched_at": new_fetched}
+                return self._serve_cached(record, entry, cache, cfg, downloaded=False)
+
         content_hash = _sha256(html)
         had_prior = entry is not None
         unchanged = had_prior and entry.get("content_hash") == content_hash
@@ -298,9 +312,10 @@ class SiteSnapshotService:
         last_modified = result.headers.get("last-modified")
         fetched_at = _now_iso()
 
-        if cfg.use_cache:
+        if cfg.use_cache and (html.strip() or not entry):
             # Truncated bodies ARE cached (with a flag) so re-runs recognize the
             # URL and the capped-byte hash stays stable instead of flapping.
+            # An empty body never replaces a good cached one (see above).
             cache.save(
                 url,
                 status=result.status,

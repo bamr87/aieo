@@ -158,7 +158,7 @@ class SiteDiscovery:
 
     def discover(self, base_url, fetcher, cache, cfg) -> Discovery:
         root_host = host_key(urlparse(base_url).netloc)
-        robots, declared_sitemaps, present, delay = self._from_robots(
+        robots, declared_sitemaps, present, delay = self.load_robots(
             base_url, fetcher, cache, cfg
         )
         seen: Dict[str, str] = {}  # normalized url -> source (first wins)
@@ -179,7 +179,7 @@ class SiteDiscovery:
         # 2) sitemap(s): declared in robots, else the Jekyll default.
         sitemap_urls = declared_sitemaps or [urljoin(base_url, "/sitemap.xml")]
         sitemap_count = 0
-        for loc, _lastmod in self._from_sitemaps(sitemap_urls, fetcher, cache, cfg):
+        for loc, _lastmod in self.iter_sitemap_urls(sitemap_urls, fetcher, cache, cfg):
             if add(loc, "sitemap"):
                 sitemap_count += 1
 
@@ -242,7 +242,7 @@ class SiteDiscovery:
             return result.text
         return None
 
-    def _from_robots(self, base_url, fetcher, cache, cfg):
+    def load_robots(self, base_url, fetcher, cache, cfg):
         robots_url = urljoin(base_url, "/robots.txt")
         rp = robotparser.RobotFileParser()
         text = self._cached_fetch(robots_url, fetcher, cache, cfg)
@@ -275,7 +275,9 @@ class SiteDiscovery:
         rp.allow_all = True
         return rp, declared, False, delay
 
-    def _from_sitemaps(self, sitemap_urls, fetcher, cache, cfg, _depth=0, _seen=None):
+    def iter_sitemap_urls(
+        self, sitemap_urls, fetcher, cache, cfg, _depth=0, _seen=None
+    ):
         """Yield (loc, lastmod) handling <urlset> and nested <sitemapindex>."""
         if _seen is None:
             _seen = set()
@@ -299,7 +301,7 @@ class SiteDiscovery:
                     for loc in sm
                     if _local(loc.tag) == "loc" and loc.text
                 ]
-                yield from self._from_sitemaps(
+                yield from self.iter_sitemap_urls(
                     children, fetcher, cache, cfg, _depth + 1, _seen
                 )
             else:  # urlset

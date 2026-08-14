@@ -196,6 +196,35 @@ def test_changed_page_detected_on_rerun(site, workspace):
     assert second.stats["pages_changed"] == 1
 
 
+def test_broken_revalidation_keeps_the_backup(site, workspace, monkeypatch):
+    """An empty "200 OK" answer to a conditional GET must not empty the snapshot.
+
+    Some servers (observed live on nayuki.io) reply to If-None-Match with 200 and
+    no body instead of 304. Trusting that would silently shrink the backup to
+    nothing on the next run.
+    """
+    base, _ = site
+    svc = SiteSnapshotService(root=workspace)
+    first = svc.crawl(base, _cfg())
+    words_before = sum(p.word_count for p in first.pages)
+    assert words_before > 0
+
+    real_fetch = fetcher.Fetcher.fetch
+
+    def empty_on_revalidation(self, url, conditional=None):
+        result = real_fetch(self, url, conditional)
+        if conditional:
+            result.status = 200
+            result.text = ""
+            result.content_type = None
+        return result
+
+    monkeypatch.setattr(fetcher.Fetcher, "fetch", empty_on_revalidation)
+    second = svc.crawl(base, _cfg())
+    assert sum(p.word_count for p in second.pages) == words_before
+    assert not any(p.error for p in second.pages if not p.stale)
+
+
 def test_no_cache_purges_and_refetches(site, workspace):
     base, _ = site
     svc = SiteSnapshotService(root=workspace)

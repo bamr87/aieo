@@ -46,11 +46,34 @@ Each capability is a service class in `backend/app/services/` consumed by all th
 
 - **REST API** — `backend/app/main.py` mounts routers from `backend/app/api/v1/` under `/api/v1`: audit, optimize, citations, patterns, workspace, content. Lifecycle endpoints live in `content.py` under `/api/v1/aieo/*` (e.g. `/api/v1/aieo/research`, `/aieo/write`, `/aieo/publish/wordpress`). Async tasks use Celery (`backend/app/tasks/`).
 - **MCP server** — [backend/app/mcp_server.py](backend/app/mcp_server.py) exposes ~20 `aieo_*` tools (`aieo_score_content`, `aieo_audit_url`, `aieo_research`, `aieo_workspace_*`, etc.). Run with `python -m backend.app.mcp_server`. This is what Claude Desktop / Copilot call.
-- **CLI & standalone scripts** — `cli/aieo/` is a Click CLI (`audit`, `optimize`, `dashboard`, `crawl`). Repo-root `run_audit.py` (batch audit of URLs in `sites.txt`), `crawl_site.py` (site snapshot — see below), and `generate_reports.py` run *without the full backend* — they import the relevant service directly and work in heuristic/offline mode with no API key.
+- **CLI & standalone scripts** — `cli/aieo/` is a Click CLI (`audit`, `optimize`, `dashboard`, `crawl`, `context`). Repo-root `run_audit.py` (batch audit of URLs in `sites.txt`), `crawl_site.py` (site snapshot — see below), `build_context.py` (site context — see below), and `generate_reports.py` run *without the full backend* — they import the relevant service directly and work in heuristic/offline mode with no API key.
 
 ## Site snapshot (offline site copy)
 
 Separate from scoring: `backend/app/services/site_snapshot/` (package, public class `SiteSnapshotService`) crawls a Jekyll/static site into a cached, offline, multi-format copy for review/analysis/backup. Discovery is Jekyll-tuned (`sitemap.xml` → `feed.xml` → `robots.txt` → same-domain link BFS); every page is cached under `<workspace>/.cache/snapshots/<slug>/` with conditional GET (ETag/Last-Modified) + content hashing, so re-runs only re-fetch changed pages. Exports (text/json/markdown/html/pdf/bundle) all derive from one in-memory model in `model.py`; PDF has a pure-stdlib floor (`pdf_writer.py`, zero new deps) that upgrades to reportlab/Playwright if installed. Exposed on all surfaces: `crawl_site.py`, `aieo crawl`, MCP `aieo_crawl_site`/`aieo_crawl_manifest`, and `POST /api/v1/aieo/snapshot`. The SSRF guard lives in `fetcher.py` (do **not** rely on `core.validation.validate_url`, which does not block private hosts). Tests are fully offline in `backend/tests/test_site_snapshot.py`. See `docs/SNAPSHOT.md`.
+
+## Site context (crawl a URL N levels down into a dataset)
+
+`backend/app/services/site_context/` (package, public class `SiteContextService`) builds a **contextual dataset** for a seed URL and the pages below it — aimed at a *section* (e.g. `/category/programming`), not a whole domain. Three phases, each stoppable: **map** (`link_map.py` — level-ordered BFS from the seed recording nodes/edges/references; depth is measured from the seed, each level has its own budget, scope is `host`/`domain`/`path`), **extract** (`extraction.py` — re-reads the cached bodies with no second request, then `presentation.py` for styles/palette/type/images/animation and `seo.py` for metadata facts + issues), and **analyze** (`agent.py` — loops pages through the **Claude Code CLI over OAuth**, then one site-level synthesis call).
+
+Key points when changing it:
+
+- The agent's instructions are markdown: `prompts/agents/site-context-analyst.md`
+(per page) and `site-context-synthesizer.md` (site level). Change what the analysis looks for there, not in Python. Python emits *facts*; judgement is the agent's.
+- **Interactive content is content.** `keep_interactive` (default on) preserves
+`<form>` subtrees and `hidden` demo containers that the snapshot extractor strips as chrome — a page whose payload is a live demo is otherwise extracted as an empty heading. Same-host JS is fetched and scanned so script-driven motion (rAF/canvas/scripted SVG) is not reported as "static".
+- `resources.py` classifies every link before it reaches the frontier: source
+downloads (`.py`, `.java`, …), archives, documents, media are typed assets, not crawlable pages.
+- Optional upgrades live in `adapters.py` (trafilatura / extruct / protego) and
+`renderer.py` (Playwright `--render`), all used only if installed and always falling back — same "stdlib floor, upgrade if present" shape as `pdf_writer`. Extraction is **not** delegated wholesale to trafilatura: it scores ~0.92 F1 on articles but ~0.52 on collections/listings, and context builds are seeded on exactly those, so `--extractor auto` uses it for articles only.
+- The agent pass is bounded (`agent_max_pages`, `agent_concurrency`,
+`agent_timeout`, and a 3-strike circuit breaker) and **always** degrades to deterministic heuristics — each node records `analysis_method` (`agent`/`heuristic`/`skipped`).
+- Unlike the snapshot crawler it must **not** deny `/category/`, `/tag/` or
+`/page/` (that is where section seeds and their items live); only real pagination traps are dropped.
+- Bodies reuse the snapshot cache (`.cache/snapshots/<site_slug>/`); context
+  manifests live beside them in `context/<context_key>.json`.
+- Exposed on all surfaces: `build_context.py`, `aieo context`, MCP
+`aieo_site_context`/`aieo_context_map`/`aieo_context_manifest`, and `POST /api/v1/aieo/context`. Tests are fully offline (fixture site + a fake `claude` binary) in `backend/tests/test_site_context.py`. See `docs/SITE_CONTEXT.md`.
 
 ## Frontend (`frontend/`)
 
@@ -89,6 +112,11 @@ python run_audit.py                                          # heuristic mode
 OPENAI_API_KEY=sk-... python run_audit.py --provider openai --model gpt-4o
 ANTHROPIC_API_KEY=sk-ant-... python run_audit.py --provider anthropic
 
+# Site context: map a URL N levels down + Claude Code (OAuth) analysis, no API key
+python build_context.py https://www.nayuki.io/category/programming --depth 2
+python build_context.py https://example.com/docs --map-only          # phase 1 only
+python build_context.py https://example.com/docs --no-agent          # skip the agent pass
+
 # MCP server (for local testing)
 python -m backend.app.mcp_server
 ```
@@ -107,4 +135,4 @@ Tests run in heuristic mode by default (no API key required). `backend/requireme
 
 ## Docs
 
-Deeper references live in `docs/`: ARCHITECTURE, PATTERNS, AGENTS, ANALYZERS, INTEGRATIONS, PUBLISHING, WORKFLOW, CLI, API, DEVELOPMENT. `PRD-aieo.md` is the full product spec.
+Deeper references live in `docs/`: ARCHITECTURE, PATTERNS, AGENTS, ANALYZERS, INTEGRATIONS, PUBLISHING, WORKFLOW, CLI, API, DEVELOPMENT, SNAPSHOT, SITE_CONTEXT. `PRD-aieo.md` is the full product spec.

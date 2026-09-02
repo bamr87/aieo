@@ -14,6 +14,6 @@ html2text>=2024.2.0
 httpx>=0.27.0
 python-dotenv>=1.0.0
 certifi>=2024.0.0
-nltk>=3.9.0
+nltk>=3.10.3
 textstat>=0.7.0
 scikit-learn>=1.6.0

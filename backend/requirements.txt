@@ -35,7 +35,7 @@ readability-lxml==0.8.1
 
 # NLP
 spacy>=3.8,<3.9
-nltk==3.9.2
+nltk==3.10.3
 textstat==0.7.10
 scikit-learn==1.7.2
 

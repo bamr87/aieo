@@ -26,7 +26,7 @@ qdrant-client>=1.7.1
 
 # Content parsing
 beautifulsoup4==4.12.2
-markdown==3.5.2
+markdown==3.8.1
 html2text==2025.4.15
 
 # MCP (Model Context Protocol) server

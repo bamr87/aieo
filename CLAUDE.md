@@ -136,3 +136,11 @@ Tests run in heuristic mode by default (no API key required). `backend/requireme
 ## Docs
 
 Deeper references live in `docs/`: ARCHITECTURE, PATTERNS, AGENTS, ANALYZERS, INTEGRATIONS, PUBLISHING, WORKFLOW, CLI, API, DEVELOPMENT, SNAPSHOT, SITE_CONTEXT. `PRD-aieo.md` is the full product spec.
+
+## Fleet context
+
+This repo is one of ~40 managed by the [bamr87/bamr87 dash](https://github.com/bamr87/bamr87) (registry: `_data/projects.yml`; tiered baseline: `docs/STANDARDS.md`). It is vendored there as a git submodule: commit and push changes **here** first — the hub only bumps its pointer afterwards. Shared CI, release, schema, and agent kits are seeded from the hub's `templates/`; prefer adopting those over hand-rolling equivalents.
+
+## Standard deviations
+
+- `UPS-QA-11 — pytest config location`: pytest is configured in `backend/pytest.ini` (`testpaths = tests`), not in a `pyproject.toml` `[tool.pytest.ini_options]` table — the repo has no `pyproject.toml`; `make test` runs `cd backend && pytest`.

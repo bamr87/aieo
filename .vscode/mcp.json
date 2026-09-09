@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "aieo-scoring": {
+      "command": "python",
+      "args": ["-m", "backend.app.mcp_server"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "OPENAI_API_KEY": "${env:OPENAI_API_KEY}",
+        "ANTHROPIC_API_KEY": "${env:ANTHROPIC_API_KEY}"
+      }
+    }
+  }
+}

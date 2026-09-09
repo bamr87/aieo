@@ -1,0 +1,89 @@
+// aieo · .vscode/launch.json — fleet-vscode/v1 · 2026-09-09. Convention + vocabulary: .vscode/README.md.
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug: FastAPI (backend)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
+      "envFile": "${workspaceFolder}/.env",
+      "jinja": true
+    },
+    {
+      "name": "Debug: pytest (backend)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v",
+        "--tb=short"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
+      "envFile": "${workspaceFolder}/.env",
+      "jinja": true
+    },
+    {
+      "name": "Debug: pytest (current file)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v",
+        "--tb=short",
+        "${file}"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
+      "envFile": "${workspaceFolder}/.env",
+      "jinja": true
+    },
+    {
+      "name": "Debug: CLI (aieo)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "aieo.cli",
+      "args": [],
+      "cwd": "${workspaceFolder}/cli",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
+      "envFile": "${workspaceFolder}/.env",
+      "jinja": true
+    },
+    {
+      "name": "Debug: scripts/verify.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/verify.py",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Debug: frontend in Edge (:5173)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend/src",
+      "preLaunchTask": "Frontend: serve"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug: full stack (backend + frontend)",
+      "configurations": [
+        "Debug: FastAPI (backend)",
+        "Debug: frontend in Edge (:5173)"
+      ]
+    }
+  ]
+}

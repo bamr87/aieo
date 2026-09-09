@@ -50,8 +50,14 @@ dist/
 dist-ssr/
 *.local
 
-# IDEs
-.vscode/
+# IDEs (the fleet .vscode convention is tracked; see .vscode/README.md)
+.vscode/*
+!.vscode/README.md
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/mcp.json
 .idea/
 *.swp
 *.swo
@@ -78,7 +84,6 @@ docker-compose.override.yml
 *.log
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo

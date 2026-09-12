@@ -1,0 +1,41 @@
+// aieo · .vscode/settings.json — fleet-vscode/v1 · 2026-09-09. Convention + vocabulary: .vscode/README.md.
+// Repo-scoped settings only. Personal editor preferences belong in the fleet workspace file.
+{
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.venv": true
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on"
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
+  },
+  "cSpell.words": [
+    "bamr",
+    "zer0",
+    "endcapture",
+    "endraw",
+    "frontmatter",
+    "Jamstack",
+    "lastmod",
+    "livereload",
+    "markdownify",
+    "wikilinks",
+    "rubygems",
+    "gemspec",
+    "webrick",
+    "posthog"
+  ],
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.cwd": "${workspaceFolder}/backend",
+  "python.testing.pytestArgs": [
+    "."
+  ]
+}

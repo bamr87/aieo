@@ -157,6 +157,18 @@ Set environment variables:
 - `AIEO_API_KEY`: Your API key
 - `AIEO_API_URL`: API base URL (default: http://localhost:8000/api/v1)
 
+### PRD lineage (standalone)
+
+Inventory PRD elements in a product repo without the backend:
+
+```bash
+python build_prd.py
+python build_prd.py /path/to/product-repo --map-only
+aieo prd . --no-agent --formats json,markdown,mermaid
+```
+
+See [PRD_LINEAGE.md](PRD_LINEAGE.md).
+
 ## Scoring
 
 The scoring engine evaluates content against 10 AIEO patterns with the following weights:

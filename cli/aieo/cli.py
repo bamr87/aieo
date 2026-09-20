@@ -1,7 +1,7 @@
 """Main CLI entry point."""
 
 import click
-from .commands import audit, context, dashboard, optimize, snapshot
+from .commands import audit, context, dashboard, optimize, prd, snapshot
 
 
 @click.group()
@@ -17,6 +17,7 @@ cli.add_command(optimize.optimize)
 cli.add_command(dashboard.dashboard)
 cli.add_command(snapshot.crawl)
 cli.add_command(context.context)
+cli.add_command(prd.prd)
 
 
 if __name__ == "__main__":

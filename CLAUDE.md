@@ -75,6 +75,19 @@ downloads (`.py`, `.java`, …), archives, documents, media are typed assets, no
 - Exposed on all surfaces: `build_context.py`, `aieo context`, MCP
 `aieo_site_context`/`aieo_context_map`/`aieo_context_manifest`, and `POST /api/v1/aieo/context`. Tests are fully offline (fixture site + a fake `claude` binary) in `backend/tests/test_site_context.py`. See `docs/SITE_CONTEXT.md`.
 
+## PRD lineage (search a product repo for spec elements)
+
+`backend/app/services/prd_lineage/` (package, public class `PrdLineageService`) searches **any repo that delivers a product**, inventories canonical PRD elements, and scores how well README / CHANGELOG / agent instructions / docs / packaging stay aligned with that spec. Three phases, each stoppable: **map** (`mapper.py` — walk the tree, classify sources, skip vendor/secrets), **extract** (`extraction.py` — headings, element hits, name/version, markdown citations; no second read beyond the file), and **analyze** (`agent.py` — priority sources through the **Claude Code CLI over OAuth**, then one repo-level synthesis).
+
+Key points when changing it:
+
+- The agent's instructions are markdown: `prompts/agents/prd-lineage-analyst.md`
+(per source) and `prd-synthesizer.md` (repo level). Change what "good" looks like there, not in Python. Python emits *facts*; judgement is the agent's. Canonical element ids live in `elements.py` (keep them in sync with the prompts).
+- It does **not** rewrite files. Output is completeness, drift, lineage breaks, and alignment actions.
+- The agent pass is bounded (`agent_max_sources`, `agent_timeout`, 3-strike circuit breaker) and **always** degrades to deterministic heuristics — each source records `analysis_method` (`agent`/`heuristic`/`skipped`).
+- Exposed on all surfaces: `build_prd.py`, `aieo prd`, MCP
+`aieo_prd`/`aieo_prd_map`/`aieo_prd_manifest`, and `POST /api/v1/aieo/prd`. Tests are fully offline (fixture product repo + injectable runner) in `backend/tests/test_prd_lineage.py`. See `docs/PRD_LINEAGE.md`.
+
 ## Frontend (`frontend/`)
 
 A React 19 + TypeScript + Vite SPA (Tailwind v4) that consumes the same REST API. It's a thin client over `/api/v1/aieo/*` — no business logic. Key conventions for changing it:
@@ -117,6 +130,11 @@ python build_context.py https://www.nayuki.io/category/programming --depth 2
 python build_context.py https://example.com/docs --map-only          # phase 1 only
 python build_context.py https://example.com/docs --no-agent          # skip the agent pass
 
+# PRD lineage: search a product repo for spec elements + alignment actions
+python build_prd.py
+python build_prd.py /path/to/product-repo --map-only
+python build_prd.py . --no-agent
+
 # MCP server (for local testing)
 python -m backend.app.mcp_server
 ```
@@ -135,7 +153,7 @@ Tests run in heuristic mode by default (no API key required). `backend/requireme
 
 ## Docs
 
-Deeper references live in `docs/`: ARCHITECTURE, PATTERNS, AGENTS, ANALYZERS, INTEGRATIONS, PUBLISHING, WORKFLOW, CLI, API, DEVELOPMENT, SNAPSHOT, SITE_CONTEXT. `PRD-aieo.md` is the full product spec.
+Deeper references live in `docs/`: ARCHITECTURE, PATTERNS, AGENTS, ANALYZERS, INTEGRATIONS, PUBLISHING, WORKFLOW, CLI, API, DEVELOPMENT, SNAPSHOT, SITE_CONTEXT, PRD_LINEAGE. `PRD-aieo.md` is the full product spec.
 
 ## Fleet context
 

@@ -142,6 +142,7 @@ AIEO Studio is the disciplined practice of manufacturing content realities that 
 | **P1: Should Have** | SEO + AEO Dashboard | Before/after scores (traditional SEO + AIEO). Preview of refactored page as seen by Claude/Grok. Lighthouse, schema validator, AI citation simulator | Proves ROI, drives retention |
 | **P1: Should Have** | Pattern library | 16+ proven AIEO patterns with examples (10 original + 6 new AEO-specific) | Enables learning, templates |
 | **P1: Should Have** | Web UI | Dashboard + audit + refactor interface | Expands TAM beyond CLI users |
+| **P1: Should Have** | PRD Lineage | Search any product repo, inventory canonical PRD elements, detect drift vs README/CHANGELOG/agent docs/packaging, and emit alignment actions (`aieo_prd`) | Solidifies product-spec lineage so audits and refactors share one source of truth |
 | **P2: Could Have** | Batch processing | Process sitemap/folder at once with site crawler | Scales for publishers & agencies |
 | **P2: Could Have** | Webhook alerts | Citation drop notifications | Engagement hook |
 | **P3: Won't Have (v1)** | Mobile app | iOS/Android app | Low priority for creators |

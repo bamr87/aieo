@@ -181,6 +181,18 @@ python build_context.py https://example.com/blog --no-agent
 
 Also available as `aieo context <url>`, the MCP tools `aieo_site_context` / `aieo_context_map` / `aieo_context_manifest`, and `POST /api/v1/aieo/context`. See [docs/SITE_CONTEXT.md](docs/SITE_CONTEXT.md).
 
+### PRD Lineage — search a product repo for spec elements
+
+Point it at any repository that delivers a product. It maps PRD-bearing files, extracts canonical elements and citations, then scores completeness, drift, and lineage (README / CHANGELOG / CLAUDE.md / docs / packaging vs the PRD) so the spec and its witnesses can be aligned.
+
+```bash
+python build_prd.py
+python build_prd.py /path/to/product-repo --map-only
+python build_prd.py . --no-agent --formats json,markdown,mermaid
+```
+
+Also available as `aieo prd`, the MCP tools `aieo_prd` / `aieo_prd_map` / `aieo_prd_manifest`, and `POST /api/v1/aieo/prd`. See [docs/PRD_LINEAGE.md](docs/PRD_LINEAGE.md).
+
 ### MCP Integration (Agent Workflows)
 
 Configure AIEO as an MCP server in your AI tool:
@@ -357,6 +369,7 @@ python -m backend.app.mcp_server
 - [AIEO Patterns](docs/PATTERNS.md)
 - [Site Snapshot](docs/SNAPSHOT.md)
 - [Site Context](docs/SITE_CONTEXT.md)
+- [PRD Lineage](docs/PRD_LINEAGE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Development Guide](docs/DEVELOPMENT.md)
 - [Product Requirements](PRD-aieo.md)

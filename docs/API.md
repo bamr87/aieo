@@ -147,6 +147,30 @@ Apply pattern to content.
 }
 ```
 
+### POST /aieo/prd
+
+Search a product repo for PRD elements and lineage witnesses.
+
+**Request:**
+```json
+{
+  "repo_root": "/path/to/product-repo",
+  "formats": ["json", "markdown"],
+  "map_only": false,
+  "agent_enabled": true
+}
+```
+
+**Response:** stats, completeness score, canonical PRD path, context brief, and export paths. See [PRD_LINEAGE.md](PRD_LINEAGE.md).
+
+### GET /aieo/prd
+
+List stored PRD-lineage inventories.
+
+### GET /aieo/prd/{repo_slug}
+
+Return a stored inventory without re-walking the tree.
+
 ## Error Responses
 
 All errors follow this format:

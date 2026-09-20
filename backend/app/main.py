@@ -18,6 +18,7 @@ from .api.v1 import (
     content,
     snapshot,
     site_context,
+    prd,
 )
 
 # Configure logging
@@ -80,6 +81,7 @@ app.include_router(workspace.router, prefix=settings.API_V1_PREFIX, tags=["works
 app.include_router(content.router, prefix=settings.API_V1_PREFIX, tags=["content"])
 app.include_router(snapshot.router, prefix=settings.API_V1_PREFIX, tags=["snapshot"])
 app.include_router(site_context.router, prefix=settings.API_V1_PREFIX, tags=["context"])
+app.include_router(prd.router, prefix=settings.API_V1_PREFIX, tags=["prd"])
 
 
 @app.get("/")

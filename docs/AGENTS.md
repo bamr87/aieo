@@ -14,6 +14,8 @@ Prompt agents live in `backend/prompts/agents/` and are executed by `AgentRunner
 - `headline-generator`
 - `cro-analyst`
 - `landing-page-optimizer`
+- `prd-lineage-analyst`
+- `prd-synthesizer`
 
 ## API
 

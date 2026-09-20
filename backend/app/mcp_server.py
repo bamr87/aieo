@@ -13,6 +13,7 @@ Tools exposed:
     - aieo_audit_url: Fetch a URL and score its content
     - aieo_list_patterns: List all scoring patterns and their weights
     - aieo_get_pattern: Get detailed definition of a specific pattern
+    - aieo_prd: Inventory PRD elements and lineage in a product repo
 """
 
 # Imports are intentionally split around runtime setup (path/env) below.
@@ -54,6 +55,7 @@ from app.services.workspace_service import WorkspaceService
 from app.services.write_service import WriteService
 from app.services.site_snapshot import CrawlConfig, SiteSnapshotService
 from app.services.site_context import ContextConfig, SiteContextService
+from app.services.prd_lineage import PrdConfig, PrdLineageService
 from app.core.config import workspace_root
 
 
@@ -77,6 +79,7 @@ def create_mcp_server():
     workspace_service = WorkspaceService(workspace_root())
     snapshot_service = SiteSnapshotService()
     context_service = SiteContextService()
+    prd_service = PrdLineageService()
 
     @server.list_tools()
     async def list_tools():
@@ -474,6 +477,70 @@ def create_mcp_server():
                     "required": ["site_slug"],
                 },
             ),
+            Tool(
+                name="aieo_prd",
+                description=(
+                    "Search a product repository for PRD elements and lineage "
+                    "witnesses (README, CHANGELOG, agent instructions, docs, "
+                    "packaging). Three phases: map sources, extract element hits "
+                    "and citations, then analyze completeness/drift and propose "
+                    "alignment actions (Claude Code over OAuth, heuristic fallback). "
+                    "Does not rewrite files. Point at any repo that delivers a product."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "repo_root": {
+                            "type": "string",
+                            "description": "Filesystem path to the product repo root.",
+                        },
+                        "formats": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["json", "markdown", "mermaid"],
+                            },
+                        },
+                        "max_files": {"type": "integer", "default": 400},
+                        "agent_enabled": {"type": "boolean", "default": True},
+                        "agent_model": {"type": "string"},
+                        "agent_max_sources": {"type": "integer", "default": 12},
+                        "agent_synthesis": {"type": "boolean", "default": True},
+                        "map_only": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": "Stop after classifying sources",
+                        },
+                    },
+                    "required": ["repo_root"],
+                },
+            ),
+            Tool(
+                name="aieo_prd_map",
+                description=(
+                    "Phase 1 only: classify PRD-bearing files in a product repo "
+                    "without extracting content or calling the agent."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "repo_root": {"type": "string"},
+                        "max_files": {"type": "integer", "default": 400},
+                    },
+                    "required": ["repo_root"],
+                },
+            ),
+            Tool(
+                name="aieo_prd_manifest",
+                description=(
+                    "Return a stored PRD-lineage inventory by repo slug without "
+                    "re-walking the tree. Omit repo_slug to list every stored inventory."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {"repo_slug": {"type": "string"}},
+                },
+            ),
         ]
 
     @server.call_tool()
@@ -774,6 +841,61 @@ def create_mcp_server():
                                 "site_slug": site_slug,
                                 "context_key": context_key,
                             }
+                        ),
+                    )
+                ]
+            return [
+                TextContent(
+                    type="text", text=json.dumps(manifest, indent=2, default=str)
+                )
+            ]
+
+        elif name in ("aieo_prd", "aieo_prd_map"):
+            import anyio
+
+            repo_root = arguments.get("repo_root", "")
+            if not repo_root:
+                return [
+                    TextContent(
+                        type="text", text=json.dumps({"error": "repo_root required"})
+                    )
+                ]
+            try:
+                cfg = PrdConfig.from_dict(arguments)
+            except ValueError as exc:
+                return [TextContent(type="text", text=json.dumps({"error": str(exc)}))]
+            map_only = name == "aieo_prd_map" or bool(arguments.get("map_only"))
+            formats = arguments.get("formats") or (
+                ["json", "mermaid"] if map_only else ["json", "markdown"]
+            )
+            result = await anyio.to_thread.run_sync(
+                lambda: prd_service.run(
+                    repo_root, formats=formats, cfg=cfg, map_only=map_only
+                )
+            )
+            return [
+                TextContent(type="text", text=json.dumps(result, indent=2, default=str))
+            ]
+        elif name == "aieo_prd_manifest":
+            repo_slug = arguments.get("repo_slug", "")
+            if not repo_slug:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"inventories": prd_service.list_inventories()},
+                            indent=2,
+                            default=str,
+                        ),
+                    )
+                ]
+            manifest = prd_service.load_manifest(repo_slug)
+            if manifest is None:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": "no PRD inventory found", "repo_slug": repo_slug}
                         ),
                     )
                 ]

@@ -268,6 +268,10 @@ Optimization Result (before/after + changes)
 - Request/response logging
 - Error tracking
 
+### PRD lineage (`prd_lineage/`)
+
+Walks a product repo (not a website): classify spec sources, extract canonical PRD element hits and citations, then analyze completeness/drift. Prompt-driven; heuristic fallback. See [PRD_LINEAGE.md](PRD_LINEAGE.md).
+
 ## Future Architecture
 
 ### Planned Improvements

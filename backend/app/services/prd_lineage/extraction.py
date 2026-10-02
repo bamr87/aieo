@@ -22,7 +22,9 @@ _TOML_NAME_RE = re.compile(r'(?m)^\s*name\s*=\s*["\']([^"\']+)["\']')
 _TOML_VERSION_RE = re.compile(r'(?m)^\s*version\s*=\s*["\']([^"\']+)["\']')
 
 
-def extract_all(inv: PrdInventory, root: Path, cfg: Optional[PrdConfig] = None) -> Dict[str, int]:
+def extract_all(
+    inv: PrdInventory, root: Path, cfg: Optional[PrdConfig] = None
+) -> Dict[str, int]:
     cfg = cfg or PrdConfig()
     root = root.resolve()
     extracted = failed = 0
@@ -129,7 +131,12 @@ def _identity(src: SourceNode, text: str) -> Tuple[Optional[str], Optional[str]]
 def _name_from_title(title: Optional[str]) -> Optional[str]:
     if not title:
         return None
-    cleaned = re.sub(r"^(prd|product requirements(?: document)?)\s*[:\-–—]?\s*", "", title, flags=re.I)
+    cleaned = re.sub(
+        r"^(prd|product requirements(?: document)?)\s*[:\-–—]?\s*",
+        "",
+        title,
+        flags=re.I,
+    )
     cleaned = re.sub(r"\s*[—|:].*$", "", cleaned).strip()
     return cleaned or title.strip()
 

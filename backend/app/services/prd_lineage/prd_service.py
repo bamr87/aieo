@@ -94,7 +94,11 @@ class PrdLineageService:
     ) -> Dict[str, Any]:
         cfg = cfg or PrdConfig()
         inv = self.build(repo_root, cfg, map_only=map_only)
-        formats = formats or cfg.formats or (["json", "mermaid"] if map_only else ["json", "markdown"])
+        formats = (
+            formats
+            or cfg.formats
+            or (["json", "mermaid"] if map_only else ["json", "markdown"])
+        )
         dest = Path(out_dir) if out_dir else self._out_dir(inv.repo_slug)
         outputs = exporters.write_outputs(inv, dest, formats)
         analysis = inv.analysis or {}
@@ -130,7 +134,9 @@ class PrdLineageService:
         import json
 
         items = []
-        for path in sorted(cache.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        for path in sorted(
+            cache.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True
+        ):
             try:
                 data = json.loads(path.read_text(encoding="utf-8"))
             except json.JSONDecodeError:

@@ -74,7 +74,9 @@ def export_markdown(inv: PrdInventory) -> str:
 
     w("## Lineage actions\n\n")
     for action in analysis.get("alignment_actions") or []:
-        w(f"- `{action.get('path')}`: {action.get('action')} [{action.get('priority')}]\n")
+        w(
+            f"- `{action.get('path')}`: {action.get('action')} [{action.get('priority')}]\n"
+        )
     for action in analysis.get("prd_improvements") or []:
         w(
             f"- PRD `{action.get('element')}`: {action.get('action')} "

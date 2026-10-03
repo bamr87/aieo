@@ -5,7 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable, List, Optional, Set
 
-from .config import MANIFEST_NAMES, SKIP_FILE_NAMES, SKIP_SUFFIXES, TEXT_SUFFIXES, PrdConfig
+from .config import (
+    MANIFEST_NAMES,
+    SKIP_FILE_NAMES,
+    SKIP_SUFFIXES,
+    TEXT_SUFFIXES,
+    PrdConfig,
+)
 from .model import SourceNode
 
 _SECRET_PARTS = ("secret", "credential", "id_rsa", "private-key", "private_key")
@@ -107,7 +113,9 @@ def _include(path: Path) -> bool:
 
 def _walk(root: Path, skip_dirs: Set[str]) -> Iterable[Path]:
     for dirpath, dirnames, filenames in _os_walk(root):
-        dirnames[:] = [d for d in dirnames if d not in skip_dirs and not d.endswith(".egg-info")]
+        dirnames[:] = [
+            d for d in dirnames if d not in skip_dirs and not d.endswith(".egg-info")
+        ]
         base = Path(dirpath)
         for filename in filenames:
             yield base / filename

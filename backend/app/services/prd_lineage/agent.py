@@ -133,7 +133,9 @@ class PrdAgent:
                 self._tripped = True
             return False
 
-    def _synthesize(self, inv: PrdInventory, stats: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _synthesize(
+        self, inv: PrdInventory, stats: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         prompt = self._prompt(SYNTHESIZER_AGENT)
         payload = json.dumps(_inventory_payload(inv), indent=2)
         stats["agent_calls"] += 1
@@ -151,7 +153,9 @@ class PrdAgent:
 
     def _call(self, prompt: str, payload: str) -> str:
         if self._runner is not None:
-            return self._runner(prompt=prompt, payload=payload, model=self.cfg.agent_model)
+            return self._runner(
+                prompt=prompt, payload=payload, model=self.cfg.agent_model
+            )
         from ..claude_cli import run_prompt
 
         return run_prompt(
@@ -176,7 +180,9 @@ class PrdAgent:
                 body = item.get("body") or ""
         except Exception as exc:  # pragma: no cover
             logger.debug("prompt load failed for %s: %s", name, exc)
-        self._prompts[name] = body or f"Analyze PRD lineage. Agent={name}. Return JSON only."
+        self._prompts[name] = (
+            body or f"Analyze PRD lineage. Agent={name}. Return JSON only."
+        )
         return self._prompts[name]
 
     def _apply_heuristic(self, src: SourceNode) -> None:
@@ -185,9 +191,7 @@ class PrdAgent:
 
 
 def heuristic_source(src: SourceNode) -> Dict[str, Any]:
-    cites_prd = any(
-        Pathish(p).is_prd for p in src.outbound
-    ) or Pathish(src.path).is_prd
+    cites_prd = any(Pathish(p).is_prd for p in src.outbound) or Pathish(src.path).is_prd
     return {
         "role": src.role,
         "is_product_spec": src.role == "canonical_prd",
@@ -217,7 +221,9 @@ def heuristic_synthesis(inv: PrdInventory) -> Dict[str, Any]:
     could_present = [e for e in COULD_IDS if e in present]
     must_score = (len(must_present) / len(MUST_IDS)) * 70 if MUST_IDS else 0
     should_score = (
-        ((len(SHOULD_IDS) - len(should_missing)) / len(SHOULD_IDS)) * 25 if SHOULD_IDS else 0
+        ((len(SHOULD_IDS) - len(should_missing)) / len(SHOULD_IDS)) * 25
+        if SHOULD_IDS
+        else 0
     )
     could_score = (len(could_present) / len(COULD_IDS)) * 5 if COULD_IDS else 0
     score = round(must_score + should_score + could_score)
@@ -248,7 +254,8 @@ def heuristic_synthesis(inv: PrdInventory) -> Dict[str, Any]:
     witnesses = [
         s
         for s in inv.sources
-        if s.role in ("readme", "changelog", "agent_instructions", "architecture", "api")
+        if s.role
+        in ("readme", "changelog", "agent_instructions", "architecture", "api")
     ]
     broken = []
     solid = []
@@ -261,7 +268,11 @@ def heuristic_synthesis(inv: PrdInventory) -> Dict[str, Any]:
                     {"from": src.path, "to": prd_path, "reason": "no citation"}
                 )
     improvements = [
-        {"element": el, "action": f"add {el} with measurable substance", "priority": "must"}
+        {
+            "element": el,
+            "action": f"add {el} with measurable substance",
+            "priority": "must",
+        }
         for el in must_missing
     ]
     alignment = [
@@ -292,7 +303,9 @@ def heuristic_synthesis(inv: PrdInventory) -> Dict[str, Any]:
             "scattered": [
                 {"element": el, "paths": paths}
                 for el, paths in inv.element_index.items()
-                if el in SHOULD_IDS + COULD_IDS and canonical and canonical.path not in paths
+                if el in SHOULD_IDS + COULD_IDS
+                and canonical
+                and canonical.path not in paths
             ],
         },
         "drift": drift,

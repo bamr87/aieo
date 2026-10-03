@@ -14,7 +14,9 @@ This engine runs against **any repo that delivers a product**. A product repo is
 
 Score only these ids. Do not invent new ones.
 
-Must: `document_control`, `executive_summary`, `problem`, `personas`, `mvp`, `oos`, `success` Should: `ux`, `api`, `nfr`, `edge`, `architecture`, `testing`, `security`, `roadmap`, `risks` Could: `user_stories`, `data_models`, `integrations`, `gtm`, `appendix`
+- Must: `document_control`, `executive_summary`, `problem`, `personas`, `mvp`, `oos`, `success`
+- Should: `ux`, `api`, `nfr`, `edge`, `architecture`, `testing`, `security`, `roadmap`, `risks`
+- Could: `user_stories`, `data_models`, `integrations`, `gtm`, `appendix`
 
 ## Roles
 

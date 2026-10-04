@@ -67,7 +67,9 @@ Version 1.2.0
         json.dumps({"name": "widget", "version": "1.2.0", "description": "Maker tool"}),
         encoding="utf-8",
     )
-    (repo / "node_modules" / "dep" / "README.md").write_text("# dep\n", encoding="utf-8")
+    (repo / "node_modules" / "dep" / "README.md").write_text(
+        "# dep\n", encoding="utf-8"
+    )
     (repo / ".env").write_text("SECRET=1\n", encoding="utf-8")
     return repo
 
@@ -114,7 +116,9 @@ def test_extract_elements_and_lineage(tmp_path: Path):
     assert "success" not in inv.element_index
     arch = next(s for s in inv.sources if s.path == "docs/ARCHITECTURE.md")
     assert "PRD.md" in arch.outbound
-    assert any(e.source == "docs/ARCHITECTURE.md" and e.target == "PRD.md" for e in inv.edges)
+    assert any(
+        e.source == "docs/ARCHITECTURE.md" and e.target == "PRD.md" for e in inv.edges
+    )
 
 
 def test_heuristic_completeness_and_drift(tmp_path: Path):
@@ -136,9 +140,11 @@ def test_heuristic_completeness_and_drift(tmp_path: Path):
     assert "docs/ARCHITECTURE.md" in solid_from
     assert analysis["completeness"]["score"] < 100
     for el in MUST_IDS:
-        assert el in analysis["completeness"]["must_present"] + analysis["completeness"][
-            "must_missing"
-        ]
+        assert (
+            el
+            in analysis["completeness"]["must_present"]
+            + analysis["completeness"]["must_missing"]
+        )
 
 
 def test_map_only_skips_extract(tmp_path: Path):
@@ -200,7 +206,11 @@ def test_agent_runner_override(tmp_path: Path):
                     "product_name": data.get("product_name"),
                     "version": data.get("version"),
                     "claims": [],
-                    "lineage": {"cites_prd": False, "cited_paths": [], "should_cite": []},
+                    "lineage": {
+                        "cites_prd": False,
+                        "cited_paths": [],
+                        "should_cite": [],
+                    },
                     "drift": [],
                     "priority_fixes": ["tighten scope"],
                     "summary": "agent source",

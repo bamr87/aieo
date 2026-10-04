@@ -34,7 +34,14 @@ SKIP_DIR_NAMES = frozenset(
 )
 
 SKIP_FILE_NAMES = frozenset(
-    {".env", ".env.local", ".env.production", ".env.development", "id_rsa", "id_ed25519"}
+    {
+        ".env",
+        ".env.local",
+        ".env.production",
+        ".env.development",
+        "id_rsa",
+        "id_ed25519",
+    }
 )
 
 SKIP_SUFFIXES = frozenset(

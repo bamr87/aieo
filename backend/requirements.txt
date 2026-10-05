@@ -22,7 +22,7 @@ openai>=1.55,<2
 anthropic>=0.40,<1
 
 # Vector database
-qdrant-client>=1.7.1
+qdrant-client>=1.19.1
 
 # Content parsing
 beautifulsoup4==4.14.3

@@ -18,7 +18,7 @@ hiredis==3.3.0
 celery==5.6.0
 
 # AI/ML services
-openai>=1.55,<2
+openai>=3.23.0,<4
 anthropic>=0.40,<1
 
 # Vector database

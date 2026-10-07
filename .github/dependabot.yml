@@ -10,6 +10,28 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "weekly"
+    ignore:
+      # PR #108 bumps typescript 5.9 -> 7.0 and cannot install: `npm ci` fails
+      # with ERESOLVE because typescript-eslint peers
+      # `typescript >=4.8.4 <6.1.0`. Until a typescript-eslint release admits
+      # TypeScript 7, a major typescript bump can only break the frontend
+      # install, so hold at 5.x.
+      #
+      # THE UNBLOCK SIGNAL: typescript-eslint's `peerDependencies.typescript`
+      # upper bound must admit 7.x. Check it against the registry:
+      #
+      #   npm view typescript-eslint peerDependencies.typescript
+      #
+      # Last checked 2026-10-07: typescript-eslint 8.71.1 (latest) peers
+      # `typescript >=4.8.4 <6.1.0`, and typescript is at 7.0.2 — so 7.x is
+      # still excluded and this entry must stay.
+      #
+      # When the bound moves: delete this comment block and the two lines
+      # below, let dependabot propose the TypeScript major, then confirm
+      # `npm run lint` and `npm run build` pass (TypeScript 7 also changes
+      # tsc strictness, so the build is not a formality).
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 10
 
   - package-ecosystem: "docker"

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FileText, Plus, RefreshCw, Save, Sparkles, Wand2 } from 'lucide-react';
 import {
   Button,
@@ -18,6 +18,7 @@ import {
 } from '../components/ui';
 import { AGENTS, agentsApi, workspaceApi, writeApi } from '../services';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useOnMount } from '../hooks/useOnMount';
 import { useSettings } from '../hooks/useSettings';
 import { useToast } from '../hooks/useToast';
 import { agentResultText as agentText } from '../lib/agentText';
@@ -59,10 +60,9 @@ export function DraftsPage() {
     if (res) setNodes(res.nodes ?? []);
   };
 
-  useEffect(() => {
+  useOnMount(() => {
     void loadTree();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const openDraft = async (path: string) => {
     const res = await openAction.run(() => workspaceApi.read(path));

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FileText, RefreshCw, RotateCw } from 'lucide-react';
 import {
   Badge,
@@ -16,6 +16,7 @@ import {
 } from '../components/ui';
 import { workspaceApi, writeApi } from '../services';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useOnMount } from '../hooks/useOnMount';
 import { useSettings } from '../hooks/useSettings';
 import { useToast } from '../hooks/useToast';
 import { basename } from '../lib/format';
@@ -49,10 +50,9 @@ export function RewritesPage() {
     if (res) setNodes(res.nodes);
   };
 
-  useEffect(() => {
+  useOnMount(() => {
     void loadTree();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const selectDraft = async (path: string) => {
     setSelected(path);

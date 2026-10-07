@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { BarChart3, Globe, LineChart, Search, TrendingUp } from 'lucide-react';
 import {
@@ -17,6 +17,7 @@ import {
 } from '../components/ui';
 import { dataApi, researchApi } from '../services';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useOnMount } from '../hooks/useOnMount';
 import { useToast } from '../hooks/useToast';
 import { truncate } from '../lib/format';
 import type { DataResult } from '../types';
@@ -108,12 +109,11 @@ export function PerformancePage() {
     if (res !== undefined) setPriorities(res);
   };
 
-  useEffect(() => {
+  useOnMount(() => {
     void loadGa();
     void loadGsc();
     void loadPriorities();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const runSerp = async () => {
     const kw = keyword.trim();

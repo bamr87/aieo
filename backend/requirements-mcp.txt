@@ -20,7 +20,7 @@ anthropic>=0.18.0
 # Pydantic for config
 pydantic>=2.0.0
 pydantic-settings>=2.0.0
-python-dotenv>=1.0.0
+python-dotenv>=1.2.4
 
 # Screenshot capture (for visual analysis)
 playwright>=1.40.0

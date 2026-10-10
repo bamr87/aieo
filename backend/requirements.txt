@@ -44,7 +44,7 @@ httpx==0.28.1
 aiohttp==3.13.2
 
 # Utilities
-python-dotenv==1.0.0
+python-dotenv==1.2.4
 python-multipart==0.0.20
 python-jose[cryptography]==3.3.0
 

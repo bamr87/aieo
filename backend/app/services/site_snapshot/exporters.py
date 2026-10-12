@@ -174,8 +174,7 @@ def export_markdown(site: SiteSnapshot) -> str:
 # --------------------------------------------------------------------------- #
 # HTML (self-contained single file)
 # --------------------------------------------------------------------------- #
-_HTML_TEMPLATE = Template(
-    """<!DOCTYPE html>
+_HTML_TEMPLATE = Template("""<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -221,8 +220,7 @@ $summary
 $sections
 </main>
 </div></body></html>
-"""
-)
+""")
 
 
 _ACTIVE_TAGS = {"script", "iframe", "object", "embed", "form", "link", "meta", "base"}

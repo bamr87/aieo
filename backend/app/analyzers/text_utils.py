@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from typing import List
 
-
 WORD_RE = re.compile(r"\b[\w'-]+\b")
 SENTENCE_RE = re.compile(r"[^.!?]+[.!?]?")
 

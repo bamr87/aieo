@@ -8,7 +8,6 @@ from ...core.database import get_db
 from ...core.security import verify_api_key
 from ...services.citation_tracker import CitationTracker
 
-
 router = APIRouter()
 citation_tracker = CitationTracker()
 

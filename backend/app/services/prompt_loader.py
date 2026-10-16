@@ -9,7 +9,6 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
-
 # Default prompts directory relative to this file
 DEFAULT_PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts"
 

@@ -9,7 +9,6 @@ from ...core.database import get_db
 from ...core.security import verify_api_key_simple as verify_api_key
 from ...services.workspace_service import WorkspaceService
 
-
 router = APIRouter()
 workspace_service = WorkspaceService(root=workspace_root())
 

@@ -19,7 +19,6 @@ from ...services.rewrite_service import RewriteService
 from ...services.scrub_service import ScrubService
 from ...services.write_service import WriteService
 
-
 router = APIRouter()
 research_service = ResearchService()
 write_service = WriteService()

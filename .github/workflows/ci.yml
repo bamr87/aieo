@@ -134,7 +134,7 @@ jobs:
         # ruff floats per the fleet ALWAYS-LATEST policy; its rule set is
         # pinned in ruff.toml instead of by version. black stays pinned for
         # now — see the follow-up note in the PR description.
-        pip install black==25.11.0 ruff mypy
+        pip install black==26.10.0 ruff mypy
     
     - name: Check formatting
       run: |

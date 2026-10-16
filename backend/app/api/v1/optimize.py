@@ -10,7 +10,6 @@ from ...core.database import get_db
 from ...core.security import verify_api_key_simple as verify_api_key
 from ...services.optimize_service import OptimizeService
 
-
 router = APIRouter()
 optimize_service = OptimizeService()
 

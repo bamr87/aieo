@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart3, Quote, RefreshCw, Settings } from 'lucide-react';
 import {
@@ -14,6 +14,7 @@ import {
 } from '../components/ui';
 import { citationsApi } from '../services';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useOnMount } from '../hooks/useOnMount';
 import { scoreHex, truncate } from '../lib/format';
 import type { CitedPage, DashboardData } from '../types';
 
@@ -26,10 +27,9 @@ export function DashboardPage() {
     if (res) setData(res);
   };
 
-  useEffect(() => {
+  useOnMount(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const engines = data ? Object.entries(data.citations_by_engine) : [];
   const trend = data?.citation_trend ?? [];

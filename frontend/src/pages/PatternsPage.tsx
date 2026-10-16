@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Layers, Sparkles, TrendingUp } from 'lucide-react';
 import {
   Badge,
@@ -17,6 +17,7 @@ import {
 } from '../components/ui';
 import { patternsApi } from '../services';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useOnMount } from '../hooks/useOnMount';
 import { useToast } from '../hooks/useToast';
 import type { ApplyPatternResult, Pattern } from '../types';
 
@@ -38,10 +39,9 @@ export function PatternsPage() {
     setPatternId((prev) => prev || next[0]?.id || '');
   };
 
-  useEffect(() => {
+  useOnMount(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const selected = useMemo(
     () => patterns.find((p) => p.id === patternId) ?? null,

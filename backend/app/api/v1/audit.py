@@ -9,7 +9,6 @@ from ...core.database import get_db
 from ...core.security import verify_api_key_simple as verify_api_key
 from ...services.audit_service import AuditService
 
-
 router = APIRouter()
 audit_service = AuditService()
 

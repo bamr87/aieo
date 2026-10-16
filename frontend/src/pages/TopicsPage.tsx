@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Lightbulb, Plus, RefreshCw, Search } from 'lucide-react';
 import {
@@ -15,6 +15,7 @@ import {
 } from '../components/ui';
 import { workspaceApi } from '../services';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useOnMount } from '../hooks/useOnMount';
 import { useToast } from '../hooks/useToast';
 import { basename, formatDate, slugify } from '../lib/format';
 import type { WorkspaceNode } from '../types';
@@ -65,6 +66,7 @@ export function TopicsPage() {
   const add = useAsyncAction();
 
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [loadedAt, setLoadedAt] = useState<number | null>(null);
   const [title, setTitle] = useState('');
 
   const load = async () => {
@@ -78,12 +80,12 @@ export function TopicsPage() {
       .map(toTopic)
       .sort((a, b) => a.title.localeCompare(b.title));
     setTopics(found);
+    setLoadedAt(Date.now());
   };
 
-  useEffect(() => {
+  useOnMount(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const submit = async () => {
     const trimmed = title.trim();
@@ -198,8 +200,8 @@ export function TopicsPage() {
               )}
             </CardBody>
           </Card>
-          {topics.length > 0 && (
-            <p className="mt-3 px-1 text-xs text-muted">Last loaded {formatDate(Date.now())}.</p>
+          {topics.length > 0 && loadedAt !== null && (
+            <p className="mt-3 px-1 text-xs text-muted">Last loaded {formatDate(loadedAt)}.</p>
           )}
         </div>
       </div>

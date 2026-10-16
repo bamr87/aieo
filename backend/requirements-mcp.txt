@@ -6,7 +6,7 @@ mcp>=1.0.0
 
 # Content parsing
 beautifulsoup4>=4.12.0
-markdown>=3.5.0
+markdown>=3.11
 html2text>=2024.2.0
 
 # HTTP client (for aieo_audit_url tool)
@@ -14,13 +14,13 @@ httpx>=0.27.0
 certifi>=2024.0.0
 
 # AI providers (for AI-driven scoring)
-openai>=1.12.0
+openai>=3.29.0
 anthropic>=0.18.0
 
 # Pydantic for config
 pydantic>=2.0.0
 pydantic-settings>=2.0.0
-python-dotenv>=1.0.0
+python-dotenv>=1.2.4
 
 # Screenshot capture (for visual analysis)
-playwright>=1.40.0
+playwright>=1.63.0

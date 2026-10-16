@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   BarChart3,
   ExternalLink,
@@ -24,6 +24,7 @@ import {
 } from '../components/ui';
 import { dataApi, publishApi, workspaceApi } from '../services';
 import { useAsyncAction } from '../hooks/useAsyncAction';
+import { useOnMount } from '../hooks/useOnMount';
 import { useToast } from '../hooks/useToast';
 import { basename } from '../lib/format';
 import type { WorkspaceNode } from '../types';
@@ -67,12 +68,11 @@ export function PublishedPage() {
     if (res) setGscData(res);
   };
 
-  useEffect(() => {
+  useOnMount(() => {
     void loadTree();
     void loadGa();
     void loadGsc();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   const submitPublish = async () => {
     if (!draftPath) return toast.error('Pick a draft to publish');

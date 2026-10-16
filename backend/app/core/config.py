@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
@@ -75,6 +76,21 @@ class Settings(BaseSettings):
         env_file=(".env" if os.environ.get("AIEO_HEADLESS") != "1" else None),
         case_sensitive=True,
     )
+
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def _pin_postgres_driver(cls, value: str) -> str:
+        """Keep psycopg2 as the driver for a bare ``postgresql://`` URL.
+
+        SQLAlchemy 2.1 changed the default driver for that scheme from psycopg2
+        to psycopg 3, which this project does not install. Naming the driver
+        here covers every consumer of the URL (the engine and Alembic) and
+        leaves URLs that already name one, and non-Postgres URLs, untouched.
+        """
+        prefix = "postgresql://"
+        if value.startswith(prefix):
+            return "postgresql+psycopg2://" + value[len(prefix) :]
+        return value
 
 
 settings = Settings()

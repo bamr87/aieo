@@ -393,4 +393,4 @@ MIT — see [LICENSE](LICENSE).
 ---
 
 <!-- bamr87-portfolio-footer -->
-<sub>Part of the [bamr87 portfolio](https://github.com/bamr87) — browse every project on [Amr's GitHub profile](https://github.com/bamr87).</sub>
+Part of the [bamr87 portfolio](https://github.com/bamr87) — browse every project on [Amr's GitHub profile](https://github.com/bamr87).

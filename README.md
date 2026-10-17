@@ -1,6 +1,10 @@
 # AIEO — AI Engine Optimization
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/) [![MCP Compatible](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io/)
+> AI Engine Optimization: score and optimize website content so AI engines like ChatGPT and Claude will cite it.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/) [![MCP Compatible](https://img.shields.io/badge/MCP-compatible-green.svg)](https://modelcontextprotocol.io/) [![CI](https://github.com/bamr87/aieo/actions/workflows/ci.yml/badge.svg)](https://github.com/bamr87/aieo/actions/workflows/ci.yml)
+
+## Overview
 
 **AIEO** is an AI-native analysis engine that scores, reviews, and optimizes website content for citability by AI engines — ChatGPT, Claude, Grok, Gemini, Perplexity, and others. It replaces traditional SEO thinking with a prompt-engineered, agent-orchestrated workflow where AI models evaluate your content the same way they would when deciding whether to cite it.
 
@@ -378,7 +382,15 @@ python -m backend.app.mcp_server
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines, [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards, and [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
 
+## Changelog
+
+Notable changes are recorded in [CHANGELOG.md](CHANGELOG.md). Tagged versions are on the [releases page](https://github.com/bamr87/aieo/releases).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
 
+---
+
+<!-- bamr87-portfolio-footer -->
+Part of the [bamr87 portfolio](https://github.com/bamr87) — browse every project on [Amr's GitHub profile](https://github.com/bamr87).

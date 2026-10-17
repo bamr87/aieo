@@ -148,3 +148,9 @@ jobs:
       run: |
         mypy backend/app --ignore-missing-imports || echo "Type checking completed with warnings"
 
+  # Shared fleet gate (UPS-QA-20), pinned per UPS-WORK-10. It runs beside the
+  # repo-specific jobs above, not instead of them: standard-ci only detects
+  # root-level manifests (bamr87/bamr87#329), so it does not cover this repo's
+  # real test suite.
+  standard:
+    uses: bamr87/bamr87/.github/workflows/standard-ci.yml@v2
